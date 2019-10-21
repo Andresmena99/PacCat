@@ -1,8 +1,8 @@
 from django.urls import path
 
-from rango import views
+from datamodel import views
 
-app_name = 'rango'
+app_name = 'datamodel'
 
 urlpatterns = [
     path('', views.index, name='index'),

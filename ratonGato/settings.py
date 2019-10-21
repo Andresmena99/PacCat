@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rango'
+    'datamodel'
 ]
 
 MIDDLEWARE = [
@@ -85,7 +85,7 @@ if os.getenv('SQLITE', False):
     }
 else:
     DATABASES['default'] = dj_database_url.config(
-        default='postgres://alumnodb:alumnodb@localhost:5432/psi')
+        default='postgres://alumnodb:alumnodb@localhost:5432/ratongato')
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticHeroku')
 
@@ -119,7 +119,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
 ]
 
-LOGIN_URL = 'rango:login'
+LOGIN_URL = 'ratonGato:login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

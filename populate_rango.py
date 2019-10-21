@@ -5,7 +5,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'ratonGato.settings')
 
 django.setup()
-from rango.models import Category, Page
+from datamodel.models import Category, Page
 
 
 def populate():

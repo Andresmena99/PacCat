@@ -5,11 +5,11 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from rango.forms import CategoryForm
-from rango.forms import PageForm
-from rango.forms import UserForm, UserProfileForm
-from rango.models import Category
-from rango.models import Page
+from datamodel.forms import CategoryForm
+from datamodel.forms import PageForm
+from datamodel.forms import UserForm, UserProfileForm
+from datamodel.models import Category
+from datamodel.models import Page
 
 
 def index(request):
@@ -27,7 +27,7 @@ def index(request):
     context_dict['pages'] = pages_list
 
     # Render the response and send it back!
-    return render(request, 'rango/index.html', context_dict)
+    return render(request, 'datamodel/index.html', context_dict)
 
 
 def about(request):
@@ -37,7 +37,7 @@ def about(request):
     # Return a rendered response to send to the client.
     # We make use of the shortcut function to make our lives easier.
     # Note that the first parameter is the template we wish to use.
-    return render(request, 'rango/about.html', context=context_dict)
+    return render(request, 'datamodel/about.html', context=context_dict)
 
 
 def show_category(request, category_name_slug):
@@ -69,7 +69,7 @@ def show_category(request, category_name_slug):
         context_dict['pages'] = None
 
     # Go render the response and return it to the client.
-    return render(request, 'rango/category.html', context_dict)
+    return render(request, 'datamodel/category.html', context_dict)
 
 
 @login_required
@@ -95,7 +95,7 @@ def add_category(request):
 
     # Will handle the bad form, new form, or no form supplied cases.
     # Render the form with error messages (if any).
-    return render(request, 'rango/add_category.html', {'form': form})
+    return render(request, 'datamodel/add_category.html', {'form': form})
 
 
 @login_required
@@ -113,14 +113,14 @@ def add_page(request, category_name_slug):
                 page.category = category
                 page.views = 0
                 page.save()
-                return redirect(reverse('rango:show_category',
+                return redirect(reverse('datamodel:show_category',
                                         kwargs={'category_name_slug':
                                                 category_name_slug}))
     else:
         print(form.errors)
 
     context_dict = {'form': form, 'category': category}
-    return render(request, 'rango/add_page.html', context_dict)
+    return render(request, 'datamodel/add_page.html', context_dict)
 
 
 def register(request):
@@ -178,7 +178,7 @@ def register(request):
 
     # Render the template depending on the context.
     return render(request,
-                  'rango/register.html',
+                  'datamodel/register.html',
                   {'user_form': user_form,
                    'profile_form': profile_form,
                    'registered': registered})
@@ -210,7 +210,7 @@ def user_login(request):
                 # If the account is valid and active, we can log the user in.
                 # We'll send the user back to the homepage.
                 login(request, user)
-                return redirect(reverse('rango:index'))
+                return redirect(reverse('datamodel:index'))
             else:
                 # An inactive account was used - no logging in!
                 return HttpResponse("Your Rango account is disabled.")
@@ -224,12 +224,12 @@ def user_login(request):
     else:
         # No context variables to pass to the template system, hence the
         # blank dictionary object...
-        return render(request, 'rango/login.html')
+        return render(request, 'datamodel/login.html')
 
 
 @login_required
 def restricted(request):
-    return render(request, 'rango/restricted.html')
+    return render(request, 'datamodel/restricted.html')
 
 
 # Use the login_required() decorator to ensure only those logged in can
@@ -239,4 +239,4 @@ def user_logout(request):
     # Since we know the user is logged in, we can now just log them out.
     logout(request)
     # Take the user back to the homepage.
-    return redirect(reverse('rango:index'))
+    return redirect(reverse('datamodel:index'))

@@ -7,7 +7,7 @@ from django.test import Client
 from django.urls import reverse
 
 from populate_rango import populate
-from rango.models import Category
+from datamodel.models import Category
 
 
 class Chapter6FormTests(TestCase):
@@ -48,5 +48,5 @@ class Chapter6FormTests(TestCase):
     def test_python_category_added(self):
         cat = self.get_category('Python')
         print("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", cat)
-        self.client.get(reverse('rango:add_page', kwargs={'category_name_slug':cat.slug} ))
+        self.client.get(reverse('datamodel:add_page', kwargs={'category_name_slug':cat.slug} ))
         self.assertIsNotNone(cat)

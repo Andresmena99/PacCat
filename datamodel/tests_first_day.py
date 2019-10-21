@@ -7,8 +7,8 @@ from django.test import Client
 class GeneralTests(TestCase):
     def test_serving_static_files(self):
         # If using static media properly result is
-        # not NONE once it finds rango.jpg
-        result = finders.find('images/rango.jpg')
+        # not NONE once it finds datamodel.jpg
+        result = finders.find('images/datamodel.jpg')
         self.assertIsNotNone(result)
 
 
@@ -27,13 +27,13 @@ class IndexPageTests(TestCase):
         # Check the template used to render index page
         # Chapter 4
         response = self.client.get(reverse('index'))
-        self.assertTemplateUsed(response, 'rango/index.html')
+        self.assertTemplateUsed(response, 'datamodel/index.html')
 
     def test_rango_picture_displayed(self):
-        # Check if is there an image called 'rango.jpg' on the index page
+        # Check if is there an image called 'datamodel.jpg' on the index page
         # Chapter 4
         response = self.client.get(reverse('index'))
-        self.assertIn(b'img src="/static/images/rango.jpg', response.content)
+        self.assertIn(b'img src="/static/images/datamodel.jpg', response.content)
 
     def test_index_has_title(self):
         # Check to make sure that the title tag has been used
@@ -52,7 +52,7 @@ class AboutPageTests(TestCase):
         # Check if in the about page is there -
         # and contains the specified message
         # Exercise from Chapter 4
-        response = self.client.get(reverse('rango:about'))
+        response = self.client.get(reverse('datamodel:about'))
         self.assertIn(b'This tutorial has been put together by',
                       response.content)
 
@@ -60,7 +60,7 @@ class AboutPageTests(TestCase):
         # Check if is there an image on the about page
         # in URL media
         # Chapter 4
-        response = self.client.get(reverse('rango:about'))
+        response = self.client.get(reverse('datamodel:about'))
         self.assertIn(b'img src="/media/', response.content)
 
     def test_about_using_template(self):
@@ -69,5 +69,5 @@ class AboutPageTests(TestCase):
         import time
 #        time.sleep(20)
         
-        response = self.client.get(reverse('rango:about'))
-        self.assertTemplateUsed(response, 'rango/about.html')
+        response = self.client.get(reverse('datamodel:about'))
+        self.assertTemplateUsed(response, 'datamodel/about.html')
