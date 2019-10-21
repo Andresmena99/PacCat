@@ -1,6 +1,6 @@
 # Write here any updates to this file after first release in moodle.
 # modification date,    description
-# jue oct 10 14:27:19 CEST 2019, add name space "rango" to reverse calls
+# jue oct 10 14:27:19 CEST 2019, add name space "datamodel" to reverse calls
 # sat oct 12: added variable SIGIN and SIGNOUT
 #########################################################################
 # you may modified the following twolines
@@ -18,13 +18,13 @@ from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
 
-from rango.forms import UserForm
-from rango.forms import UserProfileForm
-from rango.models import Category
-from rango.models import UserProfile, Page
-# python ./manage.py test rango.tests.UserAuthenticationTests --keepdb
+from datamodel.forms import UserForm
+from datamodel.forms import UserProfileForm
+from datamodel.models import Category
+from datamodel.models import UserProfile, Page
+# python ./manage.py test datamodel.tests.UserAuthenticationTests --keepdb
 # class UserAuthenticationTests(TestCase):
-from rango.tests_utils import createPicture, populate
+from datamodel.tests_utils import createPicture, populate
 
 username = "myUserName1"
 passwd = "myPAssword1"
@@ -51,7 +51,7 @@ class UserAuthenticationTests(TestCase):
 
         # logout (just in case) -> logout redirects to index by
         # I will call it explicitely
-        response = self.client.get(reverse('rango:logout'), follow=True)
+        response = self.client.get(reverse('datamodel:logout'), follow=True)
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('index'), follow=True)
 
@@ -67,7 +67,7 @@ class UserAuthenticationTests(TestCase):
         loginDict["username"] = username
         loginDict["password"] = passwd
         response = self.client.post(
-            reverse('rango:login'), loginDict,
+            reverse('datamodel:login'), loginDict,
             follow=True)  # follow redirection
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('index'), follow=True)
@@ -91,7 +91,7 @@ class UserAuthenticationTests(TestCase):
         catDict["name"] = 'testcategory'
         catDict["likes"] = 0
         catDict["views"] = 0
-        self.client.post(reverse('rango:add_category'), catDict)
+        self.client.post(reverse('datamodel:add_category'), catDict)
         try:
             category = Category.objects.get(slug='testcategory')
             self.assertTrue(True)
@@ -118,7 +118,7 @@ class UserAuthenticationTests(TestCase):
         pageDict["url"] = 'http://www.elpais.es'
 
         self.client.post(
-            reverse('rango:add_page',
+            reverse('datamodel:add_page',
                     kwargs={'category_name_slug': category.slug}), pageDict)
         try:
             page = Page.objects.get(title='testpage')
@@ -202,7 +202,7 @@ class UserAuthenticationTests(TestCase):
         loginDict['picture'] = createPicture()
 
         response = self.client.post(
-            reverse('rango:register'), loginDict,
+            reverse('datamodel:register'), loginDict,
             follow=True)  # follow redirection
         self.assertEqual(response.status_code, 200)  # redirection
         userKK = User.objects.get(username=username)
@@ -229,14 +229,14 @@ class UserAuthenticationTests(TestCase):
         populate()
 
         # logout (in case we are logged in)
-        response = self.client.get(reverse('rango:logout'), follow=True)
+        response = self.client.get(reverse('datamodel:logout'), follow=True)
         self.assertEqual(response.status_code, 200)  # redirection
 
         # connect category/python page (no add_page available)
         # see urls.py to understand kwargs values
         # this test will work even if we cannot connect to the category page
         response = self.client.get(
-            reverse('rango:show_category',
+            reverse('datamodel:show_category',
                     kwargs={'category_name_slug': 'python'}))
         self.assertIn(b'Official Python Tutorial', response.content)
         self.assertNotIn(b'add_page', response.content)
@@ -246,13 +246,13 @@ class UserAuthenticationTests(TestCase):
         loginDict["username"] = username
         loginDict["password"] = passwd
         response = self.client.post(
-            reverse('rango:login'), loginDict,
+            reverse('datamodel:login'), loginDict,
             follow=True)  # follow redirection
         self.assertEqual(response.status_code, 200)  # redirection
 
         # connect category/python page (now add_page is available)
         response = self.client.get(
-            reverse('rango:show_category',
+            reverse('datamodel:show_category',
                     kwargs={'category_name_slug': 'python'}))
         self.assertIn(b'Official Python Tutorial', response.content)
         self.assertIn(b'add_page', response.content)

@@ -6,7 +6,7 @@ from unittest import TestCase
 from django.test import Client
 from django.urls import reverse
 from populate_rango import populate
-from rango.models import Category
+from datamodel.models import Category
 
 
 class ModelTests(TestCase):
@@ -84,17 +84,17 @@ class Chapter5ViewTests(TestCase):
     # Need to add tests to:
     # check admin interface - is it configured and set up
     def test_admin_interface_page_view(self):
-        from rango.admin import PageAdmin
+        from datamodel.admin import PageAdmin
         self.assertIn('category', PageAdmin.list_display)
         self.assertIn('url', PageAdmin.list_display)
 
     def test_show_category(self):
         response = self.client.get(
-            reverse('rango:show_category', kwargs={'category_name_slug': 'python'}))
+            reverse('datamodel:show_category', kwargs={'category_name_slug': 'python'}))
         self.assertIn(b'How to Think like a Computer Scientis',
                       response.content)
         response = self.client.get(
-            reverse('rango:show_category',
+            reverse('datamodel:show_category',
                     kwargs={'category_name_slug': 'asdfgh'}))
         self.assertIn(b'The specified category does not exist',
                       response.content)
