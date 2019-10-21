@@ -1,0 +1,4 @@
+*.pyc
+staticfiles
+uploads
+db.sqlite3
