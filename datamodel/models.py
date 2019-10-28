@@ -4,19 +4,6 @@ from enum import IntEnum
 from django.template.defaultfilters import slugify
 import datetime
 
-
-class User(models.Model):
-    name = models.CharField(max_length=128)
-    password = models.CharField(max_length=128)
-    slug = models.SlugField(unique=True)
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-
-    def __str__(self):
-        return self.name
-
-
 class GameStatus(IntEnum):
     CREATED = 0
     ACTIVE = 1
@@ -31,8 +18,8 @@ class GameStatus(IntEnum):
 
 
 class Game(models.Model):
-    cat_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cat_user")
-    mouse_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="mouse_user")
+    cat_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="games_as_cat")
+    mouse_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="games_as_mouse")
 
     cat1 = models.IntegerField(blank=False, null=False)
     cat2 = models.IntegerField(blank=False, null=False)
@@ -44,6 +31,7 @@ class Game(models.Model):
     status = models.IntegerField(choices=GameStatus.get_values(), default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
+        print("Status "+self.status)
         if (self.status == GameStatus.CREATED):
             self.cat1 = 0
             self.cat2 = 2

@@ -17,6 +17,7 @@ class GameModelTests(tests.BaseModelTest):
     def test1(self):
         """ Crear juego válido con un único jugador """
         game = Game(cat_user=self.users[0])
+        print("Esto lo paso")
         game.full_clean()
         game.save()
         self.assertIsNone(game.mouse_user)
