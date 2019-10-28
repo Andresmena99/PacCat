@@ -42,7 +42,7 @@ class Game(models.Model):
 
     def save(self, *args, **kwargs):
         if 0<=cat1<=63 and 0<=cat2<=63 and 0<=cat3<=63 and 0<=cat4<=63 and 0<=mouse<=63:
-            if status != 'Created' and status != 'Active' and status != 'Finished':
+            if (status != 'Created' and status != 'Active' and status != 'Finished'):
                 super(Game, self).save(*args, **kwargs)
         else:
             #REVISAR
