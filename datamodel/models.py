@@ -32,22 +32,23 @@ class Game(models.Model):
     cat_user = models.ForeignKey(User, on_delete=models.CASCADE)
     mouse_user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    cat1 = models.IntegerField(blank=False)
-    cat2 = models.IntegerField(blank=False)
-    cat3 = models.IntegerField(blank=False)
-    cat4 = models.IntegerField(blank=False)
-    mouse = models.IntegerField(blank=False)
+    cat1 = models.IntegerField(blank=False, null=False)
+    cat2 = models.IntegerField(blank=False, null=False)
+    cat3 = models.IntegerField(blank=False, null=False)
+    cat4 = models.IntegerField(blank=False, null=False)
+    mouse = models.IntegerField(blank=False, null=False)
+    #REVISAR
+    status = models.CharField(choices = GameStatus.get_values(), status = GameStatus, blank=False, null=False)
 
     def save(self, *args, **kwargs):
-        if 0<=cat1<=63 and 0<=cat2<=63 and 0<=cat3<=63 and 0<=cat4<=63:
-            super(Game, self).save(*args, **kwargs)
+        if 0<=cat1<=63 and 0<=cat2<=63 and 0<=cat3<=63 and 0<=cat4<=63 and 0<=mouse<=63:
+            if status != 'Created' and status != 'Active' and status != 'Finished':
+                super(Game, self).save(*args, **kwargs)
         else:
             #REVISAR
-            raise ValidationError("Casillas no válidas")
+            raise ValidationError("Casillas no válidas o status no válido")
 
 
-    #REVISAR
-    status = models.CharField(choices = GameStatus.get_values(), status = GameStatus, blank=False)
 
     def __str__(self):
         return self.name
@@ -55,11 +56,11 @@ class Game(models.Model):
 
 
 class Move(models.Model):
-    origin = models.IntegerField(blank=False)
-    target = models.IntegerField(blank=False)
+    origin = models.IntegerField(blank=False, null=False)
+    target = models.IntegerField(blank=False, null=False)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     player = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateTimeField(default = datetime.now, blank=False)
+    date = models.DateTimeField(default = datetime.now, blank=False, null=False)
 
     def __str__(self):
         return self.name
