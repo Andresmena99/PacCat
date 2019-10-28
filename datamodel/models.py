@@ -32,24 +32,35 @@ class Game(models.Model):
     cat_user = models.ForeignKey(User, on_delete=models.CASCADE)
     mouse_user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    cat1 = models.IntegerField(default = 0, blank = false)
-    cat2 = models.IntegerField(default = 2)
-    cat3 = models.IntegerField(default = 4)
-    cat4 = models.IntegerField(default = 6)
-    mouse = models.IntegerField(default = 59)
+    cat1 = models.IntegerField(blank = false, null = false)
+    cat2 = models.IntegerField(blank = false, null = false)
+    cat3 = models.IntegerField(blank = false, null = false)
+    cat4 = models.IntegerField(dblank = false, null = false)
+    mouse = models.IntegerField(blank = false, null = false)
     cat_turn = models.BooleanField(initial=True)
     #REVISAR
     status = models.CharField(choices = GameStatus.get_values(), status = GameStatus, default = GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
-        if 0<=cat1<=63 and 0<=cat2<=63 and 0<=cat3<=63 and 0<=cat4<=63 and 0<=mouse<=63:
+        if (status == GameStatus.CREATED):
+            cat1 = 0
+            cat2 = 2
+            cat3 = 4
+            cat4 = 6
+            mouse = 59
+            status = GameStatus.ACTIVE
+
+        elif (status == GameStatus.ACTIVE):
+            if 0<=cat1<=63 and 0<=cat2<=63 and 0<=cat3<=63 and 0<=cat4<=63 and 0<=mouse<=63:
             #if not (status != 'Created' and status != 'Active' and status != 'Finished'):
-            super(Game, self).save(*args, **kwargs)
+
+            else:
+                #REVISAR
+                raise ValidationError("Casillas no válidas o status no válido")
         else:
-            #REVISAR
-            raise ValidationError("Casillas no válidas o status no válido")
+            pass
 
-
+        super(Game, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
