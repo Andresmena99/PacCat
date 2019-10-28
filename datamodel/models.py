@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from enum import Enum
+from enum import IntEnum
 from django.template.defaultfilters import slugify
 import datetime
 
@@ -12,13 +12,12 @@ class User(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
-        super(Category, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
 
-class GameStatus(Enum):
+class GameStatus(IntEnum):
     CREATED = 0
     ACTIVE = 1
     FINISHED = 2
@@ -32,8 +31,8 @@ class GameStatus(Enum):
 
 
 class Game(models.Model):
-    cat_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    mouse_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cat_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cat_user")
+    mouse_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="mouse_user")
 
     cat1 = models.IntegerField(blank=False, null=False)
     cat2 = models.IntegerField(blank=False, null=False)
@@ -42,7 +41,7 @@ class Game(models.Model):
     mouse = models.IntegerField(blank=False, null=False)
     cat_turn = models.BooleanField(blank=False, null=False)
     #REVISAR
-    status = models.CharField(choices=GameStatus.get_values(), default=GameStatus.CREATED)
+    status = models.IntegerField(choices=GameStatus.get_values(), default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
         if (self.status == GameStatus.CREATED):
