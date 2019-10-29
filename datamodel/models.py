@@ -1,8 +1,37 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from enum import IntEnum
 from django.template.defaultfilters import slugify
 import datetime
+
+CAT1POS = 0
+CAT2POS = 2
+CAT3POS = 4
+CAT4POS = 6
+MOUSEPOS = 59
+
+MSG_ERROR_MOVE = "Move not allowed|Movimiento no permitido"
+MSG_ERROR_INVALID_CELL = "Invalid cell for a cat or the mouse|Gato o ratón en posición no válida"
+
+TABLERO = {0: (1, 1), 1: (1, 2), 2: (1, 3), 3: (1, 4), 4: (1, 5), 5: (1, 6), 6: (1, 7), 7: (1, 8), 8: (2, 1), 9: (2, 2),
+           10: (2, 3), 11: (2, 4), 12: (2, 5), 13: (2, 6), 14: (2, 7), 15: (2, 8), 16: (3, 1), 17: (3, 2), 18: (3, 3),
+           19: (3, 4), 20: (3, 5), 21: (3, 6), 22: (3, 7), 23: (3, 8), 24: (4, 1), 25: (4, 2), 26: (4, 3), 27: (4, 4),
+           28: (4, 5), 29: (4, 6), 30: (4, 7), 31: (4, 8), 32: (5, 1), 33: (5, 2), 34: (5, 3), 35: (5, 4), 36: (5, 5),
+           37: (5, 6), 38: (5, 7), 39: (5, 8), 40: (6, 1), 41: (6, 2), 42: (6, 3), 43: (6, 4), 44: (6, 5), 45: (6, 6),
+           46: (6, 7), 47: (6, 8), 48: (7, 1), 49: (7, 2), 50: (7, 3), 51: (7, 4), 52: (7, 5), 53: (7, 6), 54: (7, 7),
+           55: (7, 8), 56: (8, 1), 57: (8, 2), 58: (8, 3), 59: (8, 4), 60: (8, 5), 61: (8, 6), 62: (8, 7), 63: (8, 8)
+           }
+
+WHITE_SPOTS = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29, 31, 32, 34, 36, 38, 41, 43, 45, 47, 48, 50, 52,
+               54, 57, 59, 61, 63]
+
+
+def validate_position(value):
+    if value not in WHITE_SPOTS:
+        raise ValidationError(MSG_ERROR_INVALID_CELL)
+
 
 class GameStatus(IntEnum):
     CREATED = 0
@@ -18,44 +47,66 @@ class GameStatus(IntEnum):
 
 
 class Game(models.Model):
+    MIN_CELL = 0
+    MAX_CELL = 63
+
     cat_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="games_as_cat")
     mouse_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="games_as_mouse")
 
-    cat1 = models.IntegerField(blank=False, null=False)
-    cat2 = models.IntegerField(blank=False, null=False)
-    cat3 = models.IntegerField(blank=False, null=False)
-    cat4 = models.IntegerField(blank=False, null=False)
-    mouse = models.IntegerField(blank=False, null=False)
-    cat_turn = models.BooleanField(blank=False, null=False)
-    #REVISAR
+    cat1 = models.IntegerField(default=CAT1POS, blank=False, null=False,
+                               validators=[validate_position])
+    cat2 = models.IntegerField(default=CAT2POS, blank=False, null=False,
+                               validators=[validate_position])
+    cat3 = models.IntegerField(default=CAT3POS, blank=False, null=False,
+                               validators=[validate_position])
+    cat4 = models.IntegerField(default=CAT4POS, blank=False, null=False,
+                               validators=[validate_position])
+    mouse = models.IntegerField(default=MOUSEPOS, blank=False, null=False,
+                                validators=[validate_position])
+    cat_turn = models.BooleanField(default=True, blank=False, null=False)
+
+    # REVISAR
     status = models.IntegerField(choices=GameStatus.get_values(), default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
-        print("Status "+self.status)
-        if (self.status == GameStatus.CREATED):
-            self.cat1 = 0
-            self.cat2 = 2
-            self.cat3 = 4
-            self.cat4 = 6
-            self.mouse = 59
-            self.cat_turn = True
-            self.status = GameStatus.ACTIVE
+        if self.cat1 not in WHITE_SPOTS or self.cat2 not in WHITE_SPOTS or self.cat3 not in WHITE_SPOTS or self.cat4 not in WHITE_SPOTS or self.mouse not in WHITE_SPOTS:
+            raise ValidationError(MSG_ERROR_INVALID_CELL)
 
-        # elif (status == GameStatus.ACTIVE):
-        #     if 0<=cat1<=63 and 0<=cat2<=63 and 0<=cat3<=63 and 0<=cat4<=63 and 0<=mouse<=63:
-        #     #if not (status != 'Created' and status != 'Active' and status != 'Finished'):
-        #
-        #     else:
-        #         #REVISAR
-        #         raise ValidationError("Casillas no válidas o status no válido")
-        # else:
-        #     pass
+        if self.status == GameStatus.CREATED:
+            self.cat1 = CAT1POS
+            self.cat2 = CAT2POS
+            self.cat3 = CAT3POS
+            self.cat4 = CAT4POS
+            self.mouse = MOUSEPOS
+            self.cat_turn = True
+
+        # Cuando nos metan al mouse, pasamos a estado activo
+        if self.mouse_user and self.status == GameStatus.CREATED:
+            self.status = GameStatus.ACTIVE
 
         super(Game, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        response = "(" + str(self.id) + ", "
+        if self.status == GameStatus.ACTIVE:
+            response += "Active)\t"
+        elif self.status == GameStatus.FINISHED:
+            response += "Finished)\t"
 
+        elif self.status == GameStatus.CREATED:
+            response += "Created)\t"
+
+        response += "Cat [X] " if self.cat_turn else "Cat [ ] "
+
+        response += str(self.cat_user) + "(" + str(self.cat1) \
+                    + ", " + str(self.cat2) + ", " + str(self.cat3) \
+                    + ", " + str(self.cat4) + ")"
+        if self.mouse_user:
+            response += " --- Mouse "
+            response += "[X] " if not self.cat_turn else "[ ] "
+            response += str(self.mouse_user) + "(" + str(self.mouse) + ")"
+
+        return response
 
 
 class Move(models.Model):
@@ -68,13 +119,20 @@ class Move(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
+            raise ValidationError(MSG_ERROR_MOVE)
+
+        if not (
+                self.game.MIN_CELL <= self.target <= self.game.MAX_CELL and self.game.MIN_CELL <= self.origin <= self.game.MAX_CELL):
+            raise ValidationError(MSG_ERROR_INVALID_CELL)
+
+        elif self.target in self.game.INVALID_CELLS or self.origin in self.game.INVALID_CELLS:
+            raise ValidationError(MSG_ERROR_INVALID_CELL)
 
 
 
-
-
-
-
+        super(Move, self).save(*args, **kwargs)
 
 
 class UserProfile(models.Model):

@@ -5,7 +5,6 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-
 from . import tests
 from .models import Game, GameStatus, Move
 
@@ -17,7 +16,6 @@ class GameModelTests(tests.BaseModelTest):
     def test1(self):
         """ Crear juego válido con un único jugador """
         game = Game(cat_user=self.users[0])
-        print("Esto lo paso")
         game.full_clean()
         game.save()
         self.assertIsNone(game.mouse_user)
@@ -159,6 +157,7 @@ class GameModelTests(tests.BaseModelTest):
         game = Game(id=0, cat_user=self.users[0])
         self.assertEqual(str(game), "(0, Created)\tCat [X] cat_user_test(0, 2, 4, 6)")
 
+
         game.mouse_user = self.users[1]
         game.status = GameStatus.ACTIVE
         game.save()
@@ -167,6 +166,7 @@ class GameModelTests(tests.BaseModelTest):
             "(0, Active)\tCat [X] cat_user_test(0, 2, 4, 6) --- Mouse [ ] mouse_user_test(59)")
 
         game.cat_turn = False
+
         self.assertEqual(
             str(game),
             "(0, Active)\tCat [ ] cat_user_test(0, 2, 4, 6) --- Mouse [X] mouse_user_test(59)")
