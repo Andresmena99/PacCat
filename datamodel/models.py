@@ -28,9 +28,15 @@ WHITE_SPOTS = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29, 31, 32, 34
                54, 57, 59, 61, 63]
 
 
+# Resto de dividir el numero de la casilla entre 8, y tiene que ser par (para casilla blanca), impar para las otras
+
 def validate_position(value):
-    if value not in WHITE_SPOTS:
-        raise ValidationError(MSG_ERROR_INVALID_CELL)
+    if (value // 8) % 2 == 0:
+        if value % 2 != 0:
+            raise ValidationError(MSG_ERROR_INVALID_CELL)
+    else:
+        if value % 2 == 0:
+            raise ValidationError(MSG_ERROR_INVALID_CELL)
 
 
 class GameStatus(IntEnum):
@@ -69,8 +75,11 @@ class Game(models.Model):
     status = models.IntegerField(choices=GameStatus.get_values(), default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
-        if self.cat1 not in WHITE_SPOTS or self.cat2 not in WHITE_SPOTS or self.cat3 not in WHITE_SPOTS or self.cat4 not in WHITE_SPOTS or self.mouse not in WHITE_SPOTS:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+        validate_position(self.cat1)
+        validate_position(self.cat2)
+        validate_position(self.cat3)
+        validate_position(self.cat4)
+        validate_position(self.mouse)
 
         if self.status == GameStatus.CREATED:
             self.cat1 = CAT1POS
@@ -127,10 +136,35 @@ class Move(models.Model):
                 self.game.MIN_CELL <= self.target <= self.game.MAX_CELL and self.game.MIN_CELL <= self.origin <= self.game.MAX_CELL):
             raise ValidationError(MSG_ERROR_INVALID_CELL)
 
-        elif self.target in self.game.INVALID_CELLS or self.origin in self.game.INVALID_CELLS:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+        validate_position(self.target)
+        validate_position(self.origin)
+
+        # REVISAR hace falta hacer un game save??
+        if self.player == self.game.cat_user:
+            if self.game.cat_turn:
+                if self.game.cat1 == self.origin:
+                    self.game.cat1 = self.target
+                    self.game.cat_turn = False
+
+                elif self.game.cat2 == self.origin:
+                    self.game.cat2 = self.target
+                    self.game.cat_turn = False
+
+                elif self.game.cat2 == self.origin:
+                    self.game.cat2 = self.target
+                    self.game.cat_turn = False
+
+                elif self.game.cat2 == self.origin:
+                    self.game.cat2 = self.target
+                    self.game.cat_turn = False
 
 
+
+        elif self.player == self.game.mouse_user:
+            if not self.game.cat_turn:
+                if self.game.mouse == self.origin:
+                    self.game.mouse = self.target
+                    self.game.cat_turn = True
 
         super(Move, self).save(*args, **kwargs)
 
