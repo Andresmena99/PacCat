@@ -31,6 +31,9 @@ WHITE_SPOTS = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29, 31, 32, 34
 # Resto de dividir el numero de la casilla entre 8, y tiene que ser par (para casilla blanca), impar para las otras
 
 def validate_position(value):
+    if not (Game.MIN_CELL <= value <= Game.MAX_CELL):
+        raise ValidationError(MSG_ERROR_INVALID_CELL)
+
     if (value // 8) % 2 == 0:
         if value % 2 != 0:
             raise ValidationError(MSG_ERROR_INVALID_CELL)

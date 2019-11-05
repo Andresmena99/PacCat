@@ -98,9 +98,13 @@ class GameModelTests(tests.BaseModelTest):
             with self.assertRaises(ValidationError):
                 game = Game(cat_user=self.users[0], mouse_user=self.users[1], cat1=id_cell)
                 game.full_clean()
+                print("\nHasta aqui llego\n")
+
             with self.assertRaises(ValidationError):
                 game = Game(cat_user=self.users[0], mouse_user=self.users[1], cat2=id_cell)
                 game.full_clean()
+                print("\nHasta aqui llego\n")
+
             with self.assertRaises(ValidationError):
                 game = Game(cat_user=self.users[0], mouse_user=self.users[1], cat3=id_cell)
                 game.full_clean()
