@@ -74,8 +74,10 @@ class Game(models.Model):
                                 validators=[validate_position])
     cat_turn = models.BooleanField(default=True, blank=False, null=False)
 
-    # REVISAR
     status = models.IntegerField(choices=GameStatus.get_values(), default=GameStatus.CREATED)
+
+    # REVISAR
+    moves = []
 
     def save(self, *args, **kwargs):
         validate_position(self.cat1)
@@ -142,7 +144,6 @@ class Move(models.Model):
         validate_position(self.target)
         validate_position(self.origin)
 
-        # REVISAR hace falta hacer un game save??
         if self.player == self.game.cat_user:
             if self.game.cat_turn:
                 if self.game.cat1 == self.origin:
@@ -170,6 +171,9 @@ class Move(models.Model):
                     self.game.cat_turn = True
 
         super(Move, self).save(*args, **kwargs)
+
+        # REVISAR
+        self.game.moves.append(self)
 
 
 class UserProfile(models.Model):
