@@ -86,8 +86,8 @@ class Game(models.Model):
                                 validators=[validate_position])
     cat_turn = models.BooleanField(default=True, blank=False, null=False)
 
-    status = models.IntegerField(choices=GameStatus.get_values(),
-                                 default=GameStatus.CREATED)
+    # REVISAR comentar en la memoria
+    status = models.IntegerField(default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
         validate_position(self.cat1)
@@ -143,7 +143,9 @@ class Move(models.Model):
     date = models.DateTimeField(auto_now_add=True, blank=False, null=False)
 
     def __str__(self):
-        return self.name
+        # REVISAR no sabemos como imprimir
+        return "origin: " + str(self.origin) + "\nTarget: " + str(self.target)
+
 
     def save(self, *args, **kwargs):
         if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
