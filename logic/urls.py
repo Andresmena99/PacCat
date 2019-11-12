@@ -1,6 +1,6 @@
 from django.urls import path
 from logic import views
-# from django.conf.urls import url
+from django.conf.urls import url
 
 urlpatterns = [
     path('', views.index, name='landing'),

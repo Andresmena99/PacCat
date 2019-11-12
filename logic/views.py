@@ -13,7 +13,7 @@ from django.urls import reverse
 
 #from datamodel import constants
 from datamodel.forms import UserForm
-
+from logic.forms import RegisterForm
 
 def anonymous_required(f):
     def wrapped(request):
@@ -47,7 +47,7 @@ def index(request):
 
 @anonymous_required
 def login_service(request):
-    # REVISAR esta copiado de la anterior practica, faltan cosas
+    # REVISAR. No se porque no funciona...
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -60,7 +60,7 @@ def login_service(request):
                 login(request, user)
                 return redirect(reverse('mouse_cat:index'))
             else:
-                return HttpResponse("Your Rango account is disabled.")
+                return HttpResponse("Your mouse_cat account is disabled.")
         else:
             print("Invalid login details: {0}, {1}".format(username, password))
             return HttpResponse("Invalid login details supplied.")
@@ -71,13 +71,32 @@ def login_service(request):
 @login_required
 def logout_service(request):
     # REVISAR esta copiado de la anterior practica
+    #logout(request)
+    #return redirect(reverse('logic:index'))
     logout(request)
-    return redirect(reverse('mouse_cat:index'))
+    return render(request, 'mouse_cat/logout.html', user=request.user)
 
-
+@anonymous_required
 def signup_service(request):
-    # REVISAR
-    return render(request, 'mouse_cat/signup.html')
+    # Si el metodo es post, significa que se estan intentando registrar
+    if request.method == 'POST':
+
+        #Sacamos la informacion del formulario de registro
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            new_user = form.save()
+            new_user.set_password(form.password)
+            new_user.save()
+
+        else:
+            #Imprimimos los errores del formulario por terminal
+            print (form.errors)
+
+    else:
+        #REVISAR: Habria que devolverlo sin el campo de alumnodb
+        return render(request, 'mouse_cat/signup.html', {'user_form': RegisterForm()})
+
+    return render(request, 'mouse_cat/signup.html', {'user_form': None})
 
 
 def counter_service(request):
@@ -85,9 +104,12 @@ def counter_service(request):
     return render(request, 'mouse_cat/counter.html')
 
 
+@login_required
 def create_game_service(request):
-    # REVISAR
-    return render(request, 'mouse_cat/new_game.html')
+    #creamos una nueva partida de game, con el usuario que ha iniciado sesion y la guardamos
+    new_game = Game(request.user)
+    new_game.save()
+    return render(request, 'mouse_cat/new_game.html', {'game': new_game})
 
 
 def join_game_service(request):
