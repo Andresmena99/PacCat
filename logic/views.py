@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 
@@ -71,18 +72,19 @@ def login_service(request):
 @login_required
 def logout_service(request):
     # REVISAR esta copiado de la anterior practica
-    #logout(request)
-    #return redirect(reverse('logic:index'))
+
     logout(request)
+    #return redirect(reverse('ratonGato:index'))
     return render(request, 'mouse_cat/logout.html', user=request.user)
+
 
 @anonymous_required
 def signup_service(request):
     # Si el metodo es post, significa que se estan intentando registrar
     if request.method == 'POST':
 
-        #Sacamos la informacion del formulario de registro
-        form = RegisterForm(request.POST)
+        # Sacamos la informacion del formulario de registro
+        form = UserCreationForm(request.POST)
         if form.is_valid():
             new_user = form.save()
             new_user.set_password(form.password)
@@ -90,11 +92,11 @@ def signup_service(request):
 
         else:
             #Imprimimos los errores del formulario por terminal
-            print (form.errors)
+            print(form.errors)
 
     else:
         #REVISAR: Habria que devolverlo sin el campo de alumnodb
-        return render(request, 'mouse_cat/signup.html', {'user_form': RegisterForm()})
+        return render(request, 'mouse_cat/signup.html', {'user_form': UserCreationForm()})
 
     return render(request, 'mouse_cat/signup.html', {'user_form': None})
 
