@@ -80,27 +80,53 @@ def logout_service(request):
     return redirect(reverse('logic:index'))
 
 
+# @anonymous_required
+# def signup_service(request):
+#     # Si el metodo es post, significa que se estan intentando registrar
+#     if request.method == 'POST':
+#
+#         # Sacamos la informacion del formulario de registro
+#         form = UserCreationForm(request.POST)
+#         if form.is_valid():
+#             new_user = form.save()
+#             new_user.set_password(form.cleaned_data.get('password1'))
+#             new_user.save()
+#
+#         else:
+#             # Imprimimos los errores del formulario por terminal
+#             print(form.errors)
+#
+#     else:
+#         # REVISAR: Habria que devolverlo sin el campo de alumnodb
+#         return render(request, 'mouse_cat/signup.html', {'user_form': UserCreationForm()})
+#
+#     return render(request, 'mouse_cat/signup.html', {'user_form': None})
+
 @anonymous_required
 def signup_service(request):
-    # Si el metodo es post, significa que se estan intentando registrar
+    # POST
     if request.method == 'POST':
+        formulario = RegisterForm(request.POST)
 
-        # Sacamos la informacion del formulario de registro
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            new_user = form.save()
-            new_user.set_password(form.cleaned_data.get('password1'))
+        #Esto llamara a la funcion clean para hacer la comprobacion
+        if formulario.is_valid():
+            new_user = formulario.save()
+
+            #Sacamos el valor de la contraseña, y se lo asignamos al usuario antes de guardar
+            new_user.set_password(formulario.cleaned_data['password'])
             new_user.save()
-
         else:
-            # Imprimimos los errores del formulario por terminal
-            print(form.errors)
+            # Formulario invalido, devolvemos los errores
+            return render(request,
+                          'mouse_cat/signup.html', {'user_form': formulario})
 
+    # Si el metodo es get, le damos un formulario para rellenarlo
     else:
-        # REVISAR: Habria que devolverlo sin el campo de alumnodb
-        return render(request, 'mouse_cat/signup.html', {'user_form': UserCreationForm()})
+        return render(request,
+                      'mouse_cat/signup.html', {'user_form': RegisterForm()})
 
-    return render(request, 'mouse_cat/signup.html', {'user_form': None})
+    return render(request,
+                  'mouse_cat/signup.html', {'user_form': None})
 
 
 def counter_service(request):
