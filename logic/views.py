@@ -13,7 +13,7 @@ from django.urls import reverse
 
 # from datamodel import constants
 from datamodel.forms import UserForm
-from datamodel.models import Counter, Game
+from datamodel.models import Counter, Game, GameStatus
 from logic.forms import RegisterForm
 from datamodel import constants
 
@@ -50,8 +50,6 @@ def index(request):
 
 @anonymous_required
 def login_service(request):
-    # REVISAR. No se porque no funciona...
-
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -61,6 +59,9 @@ def login_service(request):
         if user:
             if user.is_active:
                 login(request, user)
+
+                # REVISAR: Guardamos en la sesion el usuario. Porque no deja.
+                # request.session['user'] = request.user
 
                 return redirect(reverse('logic:index'))
             else:
@@ -74,33 +75,13 @@ def login_service(request):
 
 @login_required
 def logout_service(request):
-    # REVISAR esta copiado de la anterior practica
-
+    # Borramos todas las variables de la sesion, MENOS counter_global
     logout(request)
+    for key in request.session.keys():
+        del request.session[key]
+
     return redirect(reverse('logic:index'))
 
-
-# @anonymous_required
-# def signup_service(request):
-#     # Si el metodo es post, significa que se estan intentando registrar
-#     if request.method == 'POST':
-#
-#         # Sacamos la informacion del formulario de registro
-#         form = UserCreationForm(request.POST)
-#         if form.is_valid():
-#             new_user = form.save()
-#             new_user.set_password(form.cleaned_data.get('password1'))
-#             new_user.save()
-#
-#         else:
-#             # Imprimimos los errores del formulario por terminal
-#             print(form.errors)
-#
-#     else:
-#         # REVISAR: Habria que devolverlo sin el campo de alumnodb
-#         return render(request, 'mouse_cat/signup.html', {'user_form': UserCreationForm()})
-#
-#     return render(request, 'mouse_cat/signup.html', {'user_form': None})
 
 @anonymous_required
 def signup_service(request):
@@ -108,11 +89,11 @@ def signup_service(request):
     if request.method == 'POST':
         formulario = RegisterForm(request.POST)
 
-        #Esto llamara a la funcion clean para hacer la comprobacion
+        # Esto llamara a la funcion clean para hacer la comprobacion
         if formulario.is_valid():
             new_user = formulario.save()
 
-            #Sacamos el valor de la contraseña, y se lo asignamos al usuario antes de guardar
+            # Sacamos el valor de la contraseña, y se lo asignamos al usuario antes de guardar
             new_user.set_password(formulario.cleaned_data['password'])
             new_user.save()
         else:
@@ -148,19 +129,77 @@ def counter_service(request):
 
 @login_required
 def create_game_service(request):
-    new_game = Game(request.user)
+    # Creamos una partida asignandosela al usuario que esta dentro del sistema
+    new_game = Game(cat_user=request.user)
     new_game.save()
     return render(request, 'mouse_cat/new_game.html', {'game': new_game})
 
 
+@login_required
 def join_game_service(request):
-    # REVISAR
-    return render(request, 'mouse_cat/join_game.html')
+    # Tenemos que meter al usuario en la partida con id mas alto
+    # Entre todas las partidas, miro las que solo tienen un jugador
+    un_solo_jugador = []
+    games = Game.objects.all()
+    for partida in games:
+        if partida.mouse_user is None:
+            un_solo_jugador.append(partida)
+
+    # Si no hay partidas con un solo jugador
+    if len(un_solo_jugador) <= 0:
+        return render(request, 'mouse_cat/join_game.html', {'msg_error': "No hay partidas con un solo jugador"})
+
+    else:
+        id_max = -999
+        for partida in un_solo_jugador:
+            # REVISAR: Un jugador no puede jugar contra si mismo? O si?
+            if partida.id > id_max and partida.cat_user != request.user:
+                id_max = partida.id
+
+        if id_max == -999:
+            return render(request, 'mouse_cat/join_game.html',
+                          {'msg_error': "Las partidas que tienen un solo jugador, tu ya eres el gato"})
+
+        else:
+            # Cojo la partida a la que quiero unir al jugador
+            partida = Game.objects.get(id=id_max)
+
+            # Comienza la partida
+            partida.mouse_user = request.user
+            partida.save()
+
+            return render(request, 'mouse_cat/join_game.html', {'game': partida})
 
 
+#REVISAR: Por algun motivo, el href de select_game es el que hace que todos pete. Miralo si puedes
+@login_required
 def select_game_service(request):
+    if request.method == 'GET':
+        # Muestro todos los juegos en los que estoy participando, ya sea como raton o gato
+        # Tengo que añadir un campo id a cada partida, para luego poder hacer bien el template
+        mis_juegos_cat = []
+        mis_juegos_mouse = []
+
+        games = Game.objects.all()
+        for partida in games:
+            if partida.mouse_user == request.user:
+                mis_juegos_mouse.append(partida)
+
+            elif partida.cat_user == request.user:
+                mis_juegos_cat.append(partida)
+
+        context_dict = {}
+        context_dict['as_cat'] = mis_juegos_cat
+        context_dict['as_mouse'] = mis_juegos_mouse
+        return render(request, 'mouse_cat/select_game.html', context_dict)
+
     # REVISAR
-    return render(request, 'mouse_cat/select_game.html')
+    # Parte de POST
+    if request.method == 'POST':
+        game_id = request.POST.get('game_id')
+        request.session['game'] = Game.object.filter(id=game_id)
+
+        return redirect(reverse('mouse_cat:show_game'))
 
 
 def show_game_service(request):
