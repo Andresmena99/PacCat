@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 from datamodel.models import UserProfile
 
-
 class RegisterForm(forms.ModelForm):
     username = forms.CharField(max_length=32, widget=forms.TextInput(attrs={'placeholder': 'Minimum 8 characters'}), required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
@@ -13,8 +12,7 @@ class RegisterForm(forms.ModelForm):
     # incluya alguna mayusucula, minuscula, y simbolo, y que el usuario por ejemplo que contenga
     # solo letras (mayus o minus).
     def is_valid(self):
-        user = super(self).get("username")
-        if len(user) >= 8 and self.password == self.repeat_password and len(self.password) >= 8:
+        if len(self.username) >= 8 and self.password == self.repeat_password and len(self.password) >= 8:
             return True
         return False
 
