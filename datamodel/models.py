@@ -5,17 +5,13 @@ from django.db import models
 from enum import IntEnum
 from django.template.defaultfilters import slugify
 import datetime
+from datamodel import constants
 
 CAT1POS = 0
 CAT2POS = 2
 CAT3POS = 4
 CAT4POS = 6
 MOUSEPOS = 59
-
-MSG_ERROR_MOVE = "Move not allowed|Movimiento no permitido"
-MSG_ERROR_INVALID_CELL = "Invalid cell for a cat or the mouse|Gato o ratón " \
-                         "en posición no válida"
-MSG_ERROR_NEW_COUNTER = "Insert not allowed|Inseción no permitida"
 
 TABLERO = {0: (1, 1), 1: (1, 2), 2: (1, 3), 3: (1, 4), 4: (1, 5), 5: (1, 6),
            6: (1, 7), 7: (1, 8), 8: (2, 1), 9: (2, 2),
@@ -42,14 +38,14 @@ WHITE_SPOTS = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29, 31, 32,
 
 def validate_position(value):
     if not (Game.MIN_CELL <= value <= Game.MAX_CELL):
-        raise ValidationError(MSG_ERROR_INVALID_CELL)
+        raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
     if (value // 8) % 2 == 0:
         if value % 2 != 0:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
     else:
         if value % 2 == 0:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
 
 class GameStatus(IntEnum):
@@ -149,11 +145,11 @@ class Move(models.Model):
 
     def save(self, *args, **kwargs):
         if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
-            raise ValidationError(MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
 
         if not (
                 self.game.MIN_CELL <= self.target <= self.game.MAX_CELL and self.game.MIN_CELL <= self.origin <= self.game.MAX_CELL):
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
         validate_position(self.target)
         validate_position(self.origin)
@@ -223,7 +219,7 @@ class CounterManager(models.Manager):
         return self.get_current_value()
 
     def create(self, *args, **kwargs):
-        raise ValidationError(MSG_ERROR_NEW_COUNTER)
+        raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
 
 class Counter(SingletonModel):
@@ -231,7 +227,7 @@ class Counter(SingletonModel):
     objects = CounterManager()
 
     def save(self, *args, **kwargs):
-        raise ValidationError(MSG_ERROR_NEW_COUNTER)
+        raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
 
 

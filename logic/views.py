@@ -11,11 +11,12 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
 
-
-#from datamodel import constants
+# from datamodel import constants
 from datamodel.forms import UserForm
 from datamodel.models import Counter, Game
 from logic.forms import RegisterForm
+from datamodel import constants
+
 
 def anonymous_required(f):
     def wrapped(request):
@@ -24,6 +25,7 @@ def anonymous_required(f):
                 errorHTTP(request, exception="Action restricted to anonymous users"))
         else:
             return f(request)
+
     return wrapped
 
 
@@ -39,7 +41,6 @@ def index(request):
     # Retrieve the top 5 only -- or all if less than 5.
     # Place the list in our context_dict dictionary (with our boldmessage!)
     # that will be passed to the template engine.
-
 
     # Render the response and send it back!
     return render(request, 'mouse_cat/index.html')
@@ -60,6 +61,7 @@ def login_service(request):
         if user:
             if user.is_active:
                 login(request, user)
+
                 return redirect(reverse('logic:index'))
             else:
                 return HttpResponse("Your mouse_cat account is disabled.")
@@ -91,11 +93,11 @@ def signup_service(request):
             new_user.save()
 
         else:
-            #Imprimimos los errores del formulario por terminal
+            # Imprimimos los errores del formulario por terminal
             print(form.errors)
 
     else:
-        #REVISAR: Habria que devolverlo sin el campo de alumnodb
+        # REVISAR: Habria que devolverlo sin el campo de alumnodb
         return render(request, 'mouse_cat/signup.html', {'user_form': UserCreationForm()})
 
     return render(request, 'mouse_cat/signup.html', {'user_form': None})
@@ -138,5 +140,3 @@ def select_game_service(request):
 def show_game_service(request):
     # REVISAR
     return render(request, 'mouse_cat/game.html')
-
-

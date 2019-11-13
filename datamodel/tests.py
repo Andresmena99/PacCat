@@ -10,7 +10,6 @@ MSG_ERROR_GAMESTATUS = "Game status not valid|Estado no válido"
 MSG_ERROR_MOVE = "Move not allowed|Movimiento no permitido"
 MSG_ERROR_NEW_COUNTER = "Insert not allowed|Inseción no permitida"
 
-
 class BaseModelTest(TestCase):
     def setUp(self):
         self.users = []
