@@ -19,6 +19,14 @@ class UserProfileForm(forms.ModelForm):
         fields = ('website', 'picture')
 
 
+class MoveForm(forms.ModelForm):
+    origin = forms.IntegerField(initial=0)
+    target = forms.IntegerField(initial=0)
+
+    class Meta:
+        model = User
+        fields = ('origin', 'target')
+
 class RegisterForm(forms.ModelForm):
     username = forms.CharField(max_length=128)
     password = forms.CharField(max_length=128, widget=forms.PasswordInput)

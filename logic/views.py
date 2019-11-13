@@ -13,8 +13,8 @@ from django.urls import reverse
 
 # from datamodel import constants
 from datamodel.forms import UserForm
-from datamodel.models import Counter, Game, GameStatus
-from logic.forms import RegisterForm
+from datamodel.models import Counter, Game, GameStatus, Move
+from logic.forms import RegisterForm, MoveForm
 from datamodel import constants
 
 
@@ -22,7 +22,8 @@ def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
             return HttpResponseForbidden(
-                errorHTTP(request, exception="Action restricted to anonymous users"))
+                errorHTTP(request,
+                          exception="Action restricted to anonymous users"))
         else:
             return f(request)
 
@@ -70,7 +71,8 @@ def login_service(request):
             print("Invalid login details: {0}, {1}".format(username, password))
             return HttpResponse("Invalid login details supplied.")
     else:
-        return render(request, 'mouse_cat/login.html', {'user_form': UserForm()})
+        return render(request, 'mouse_cat/login.html',
+                      {'user_form': UserForm()})
 
 
 @login_required
@@ -123,7 +125,8 @@ def counter_service(request):
 
     counter_global = Counter.objects.get_current_value()
 
-    context_dict = {'counter_session': counter_session, 'counter_global': counter_global}
+    context_dict = {'counter_session': counter_session,
+                    'counter_global': counter_global}
     return render(request, 'mouse_cat/counter.html', context=context_dict)
 
 
@@ -147,7 +150,8 @@ def join_game_service(request):
 
     # Si no hay partidas con un solo jugador
     if len(un_solo_jugador) <= 0:
-        return render(request, 'mouse_cat/join_game.html', {'msg_error': "No hay partidas con un solo jugador"})
+        return render(request, 'mouse_cat/join_game.html',
+                      {'msg_error': "No hay partidas con un solo jugador"})
 
     else:
         id_max = -999
@@ -158,7 +162,8 @@ def join_game_service(request):
 
         if id_max == -999:
             return render(request, 'mouse_cat/join_game.html',
-                          {'msg_error': "Las partidas que tienen un solo jugador, tu ya eres el gato"})
+                          {
+                              'msg_error': "Las partidas que tienen un solo jugador, tu ya eres el gato"})
 
         else:
             # Cojo la partida a la que quiero unir al jugador
@@ -168,13 +173,14 @@ def join_game_service(request):
             partida.mouse_user = request.user
             partida.save()
 
-            return render(request, 'mouse_cat/join_game.html', {'game': partida})
+            return render(request, 'mouse_cat/join_game.html',
+                          {'game': partida})
 
 
-#REVISAR: Por algun motivo, el href de select_game es el que hace que todos pete. Miralo si puedes
+# REVISAR: Por algun motivo, el href de select_game es el que hace que todos pete. Miralo si puedes
 @login_required
-def select_game_service(request):
-    if request.method == 'GET':
+def select_game_service(request, id=-1):
+    if request.method == 'GET' and id == -1:
         # Muestro todos los juegos en los que estoy participando, ya sea como raton o gato
         # Tengo que añadir un campo id a cada partida, para luego poder hacer bien el template
         mis_juegos_cat = []
@@ -195,13 +201,59 @@ def select_game_service(request):
 
     # REVISAR
     # Parte de POST
-    if request.method == 'POST':
-        game_id = request.POST.get('game_id')
-        request.session['game'] = Game.object.filter(id=game_id)
+    if id != -1:
+        request.session['game_selected'] = id
 
-        return redirect(reverse('mouse_cat:show_game'))
+        return show_game_service(request)
 
-
+@login_required
 def show_game_service(request):
-    # REVISAR
-    return render(request, 'mouse_cat/game.html')
+    try:
+        game = Game.objects.filter(id=request.session['game_selected'])[0]
+
+        return createBoard(request, game)
+    except KeyError:
+        return HttpResponse("no hay game")
+
+@login_required
+def move_service(request):
+    if request.method == 'POST':
+        try:
+            game = Game.objects.filter(id=request.session['game_selected'])[0]
+            form = MoveForm(request.POST)
+            if form.is_valid():
+                if game.cat_turn:
+                    Move.objects.create(
+                        game=game, player=game.cat_user,
+                        origin=form.cleaned_data['origin'],
+                        target=form.cleaned_data['target'])
+                    game.save()
+
+                else:
+                    Move.objects.create(
+                        game=game, player=game.mouse_user,
+                        origin=form.cleaned_data['origin'],
+                        target=form.cleaned_data['target'])
+                    game.save()
+
+            return createBoard(request, game)
+
+        except KeyError:
+            return HttpResponse("no hay game")
+    return HttpResponse("hola")
+
+
+def createBoard(request, game):
+    if game is not None:
+        board = [0] * 64
+
+        board[game.cat1] = 1
+        board[game.cat2] = 1
+        board[game.cat3] = 1
+        board[game.cat4] = 1
+
+        board[game.mouse] = -1
+
+        return render(request, 'mouse_cat/game.html',
+                      {'game': game, 'board': board,
+                       'move_form': MoveForm()})

@@ -39,6 +39,8 @@ class GameMoveTests(tests.BaseModelTest):
 
         n_moves = 0
         for move in moves:
+            print(move)
+            print(self.users[0])
             Move.objects.create(
                 game=self.game, player=self.users[0], origin=move["origin"], target=move["target"])
             n_moves += 1
@@ -77,6 +79,9 @@ class GameMoveTests(tests.BaseModelTest):
                     self.assertFalse(self.game.cat_turn)
                     self.assertEqual(self.game.moves.count(), n_moves)
                 else:
+                    print("ESTOY AQUI")
+                    print(target)
+                    print(conf)
                     with self.assertRaisesRegex(ValidationError, tests.MSG_ERROR_MOVE):
                         Move.objects.create(
                             game=self.game, player=self.users[0], origin=conf["origin"], target=target)

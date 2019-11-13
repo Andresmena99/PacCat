@@ -1,4 +1,17 @@
-h1 {
-    color: red;
-}
-/* REVISAR Esto me lo he inventado, igual hay que hacer cositas aqui eh */
+html{height:auto;}
+
+#totalheader {float: top; margin: 0 0 0 0; height:90px; width:100%; }
+#title {color: navy; text-align:center; }
+
+#header {color:grey; text-align:right; margin-right:5px; font-weight: bold }
+
+#content { font-family:"Sans"; }
+
+a {color: #666666;; }
+a:hover{color: navy }
+
+.errorList, .error{color:red; font-weight:bold;}
+
+.mouse{color:#77a633; font-weight:bold }
+
+.cat{color:brown; font-weight:bold }

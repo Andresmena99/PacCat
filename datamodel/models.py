@@ -38,7 +38,8 @@ WHITE_SPOTS = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29, 31, 32,
 
 def validate_position(value):
     if not (Game.MIN_CELL <= value <= Game.MAX_CELL):
-        raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
+        print("SOY YO")
+        raise ValidationError(constants.MSG_ERROR_MOVE)
 
     if (value // 8) % 2 == 0:
         if value % 2 != 0:
@@ -46,6 +47,41 @@ def validate_position(value):
     else:
         if value % 2 == 0:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
+
+
+def valid_move(cat_turn, origin, target):
+    validate_position(target)
+    validate_position(origin)
+
+    print("----- valid_move")
+    print(origin)
+    print(target)
+
+    x_ori = origin // 8 + 1
+    y_ori = origin % 8 + 1
+
+    x_tar = target // 8 + 1
+    y_tar = target % 8 + 1
+
+    print(x_ori)
+    print(y_ori)
+    print(x_tar)
+    print(y_tar)
+
+    if cat_turn:
+        if x_tar != x_ori + 1:
+            print("-1")
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        elif y_tar != y_ori + 1 and y_tar != y_ori - 1:
+            print("-2")
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+    else:
+        if x_tar != x_ori + 1 and x_tar != x_ori - 1:
+            print("-3")
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        elif y_tar != y_ori + 1 and y_tar != y_ori - 1:
+            print("-4")
+            raise ValidationError(constants.MSG_ERROR_MOVE)
 
 
 class GameStatus(IntEnum):
@@ -144,15 +180,12 @@ class Move(models.Model):
 
 
     def save(self, *args, **kwargs):
+
         if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
-        if not (
-                self.game.MIN_CELL <= self.target <= self.game.MAX_CELL and self.game.MIN_CELL <= self.origin <= self.game.MAX_CELL):
-            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
-        validate_position(self.target)
-        validate_position(self.origin)
+        valid_move(self.game.cat_turn, self.origin, self.target)
 
         if self.player == self.game.cat_user:
             if self.game.cat_turn:
@@ -164,18 +197,30 @@ class Move(models.Model):
                     self.game.cat2 = self.target
                     self.game.cat_turn = False
 
-                elif self.game.cat2 == self.origin:
-                    self.game.cat2 = self.target
+                elif self.game.cat3 == self.origin:
+                    self.game.cat3 = self.target
                     self.game.cat_turn = False
 
-                elif self.game.cat2 == self.origin:
-                    self.game.cat2 = self.target
+                elif self.game.cat4 == self.origin:
+                    self.game.cat4= self.target
                     self.game.cat_turn = False
+                else:
+                    print("este1")
+                    raise ValidationError(constants.MSG_ERROR_MOVE)
+            else:
+                print("este2")
+                raise ValidationError(constants.MSG_ERROR_MOVE)
         elif self.player == self.game.mouse_user:
             if not self.game.cat_turn:
                 if self.game.mouse == self.origin:
                     self.game.mouse = self.target
                     self.game.cat_turn = True
+            else:
+                print("este3")
+                raise ValidationError(constants.MSG_ERROR_MOVE)
+        else:
+            print("este4")
+            raise ValidationError(constants.MSG_ERROR_MOVE)
 
         super(Move, self).save(*args, **kwargs)
 
