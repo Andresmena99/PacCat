@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
@@ -21,7 +22,7 @@ from django.urls import path, include
 from logic import views
 
 urlpatterns = [
-                  path('', include('logic.urls')),
-                  path('admin/', admin.site.urls),
-                  path('mouse_cat/', include('logic.urls'))
-              ]
+    url(r'', include(('logic.urls', 'logic'), namespace='logic')),
+    path('admin/', admin.site.urls),
+    path('mouse_cat/', include('logic.urls'))
+]

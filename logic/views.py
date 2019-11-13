@@ -14,6 +14,7 @@ from django.urls import reverse
 
 #from datamodel import constants
 from datamodel.forms import UserForm
+from datamodel.models import Counter, Game
 from logic.forms import RegisterForm
 
 def anonymous_required(f):
@@ -59,7 +60,7 @@ def login_service(request):
         if user:
             if user.is_active:
                 login(request, user)
-                return redirect(reverse('mouse_cat:index'))
+                return redirect(reverse('logic:index'))
             else:
                 return HttpResponse("Your mouse_cat account is disabled.")
         else:
@@ -74,8 +75,7 @@ def logout_service(request):
     # REVISAR esta copiado de la anterior practica
 
     logout(request)
-    #return redirect(reverse('ratonGato:index'))
-    return render(request, 'mouse_cat/logout.html', user=request.user)
+    return redirect(reverse('logic:index'))
 
 
 @anonymous_required
@@ -87,7 +87,7 @@ def signup_service(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             new_user = form.save()
-            new_user.set_password(form.password)
+            new_user.set_password(form.cleaned_data.get('password1'))
             new_user.save()
 
         else:
@@ -102,13 +102,24 @@ def signup_service(request):
 
 
 def counter_service(request):
-    # REVISAR
-    return render(request, 'mouse_cat/counter.html')
+    # REVISAR habra que poner Counter.objects.inc() en todos los sitios donde
+    # hagamos una peticion para que esto funcione, tambien habra que actualizar
+    # el contador que esta en la session.
+
+    if "counter" in request.session:
+        counter_session = request.session["counter"]
+    else:
+        counter_session = 0
+        request.session["counter"] = counter_session
+
+    counter_global = Counter.objects.get_current_value()
+
+    context_dict = {'counter_session': counter_session, 'counter_global': counter_global}
+    return render(request, 'mouse_cat/counter.html', context=context_dict)
 
 
 @login_required
 def create_game_service(request):
-    #creamos una nueva partida de game, con el usuario que ha iniciado sesion y la guardamos
     new_game = Game(request.user)
     new_game.save()
     return render(request, 'mouse_cat/new_game.html', {'game': new_game})

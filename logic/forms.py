@@ -22,6 +22,7 @@ class RegisterForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
+    username = forms.CharField(max_length=32, widget=forms.TextInput(attrs={'placeholder': 'Minimum 8 characters'}), required=True)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
