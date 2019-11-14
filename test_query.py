@@ -57,7 +57,9 @@ print("\n")
 
 # metemos al usuario, y comenzamos la partida
 partida.mouse_user = usuario2
-partida.status = GameStatus.ACTIVE
+
+#Al hacer save, se pone en status active
+partida.save()
 
 Move.objects.create(
                 game=partida, player=partida.cat_user, origin=2, target=11).save()

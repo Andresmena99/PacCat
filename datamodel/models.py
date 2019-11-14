@@ -13,49 +13,21 @@ CAT3POS = 4
 CAT4POS = 6
 MOUSEPOS = 59
 
-TABLERO = {0: (1, 1), 1: (1, 2), 2: (1, 3), 3: (1, 4), 4: (1, 5), 5: (1, 6),
-           6: (1, 7), 7: (1, 8), 8: (2, 1), 9: (2, 2),
-           10: (2, 3), 11: (2, 4), 12: (2, 5), 13: (2, 6), 14: (2, 7),
-           15: (2, 8), 16: (3, 1), 17: (3, 2), 18: (3, 3),
-           19: (3, 4), 20: (3, 5), 21: (3, 6), 22: (3, 7), 23: (3, 8),
-           24: (4, 1), 25: (4, 2), 26: (4, 3), 27: (4, 4),
-           28: (4, 5), 29: (4, 6), 30: (4, 7), 31: (4, 8), 32: (5, 1),
-           33: (5, 2), 34: (5, 3), 35: (5, 4), 36: (5, 5),
-           37: (5, 6), 38: (5, 7), 39: (5, 8), 40: (6, 1), 41: (6, 2),
-           42: (6, 3), 43: (6, 4), 44: (6, 5), 45: (6, 6),
-           46: (6, 7), 47: (6, 8), 48: (7, 1), 49: (7, 2), 50: (7, 3),
-           51: (7, 4), 52: (7, 5), 53: (7, 6), 54: (7, 7),
-           55: (7, 8), 56: (8, 1), 57: (8, 2), 58: (8, 3), 59: (8, 4),
-           60: (8, 5), 61: (8, 6), 62: (8, 7), 63: (8, 8)
-           }
-
-WHITE_SPOTS = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29, 31, 32,
-               34, 36, 38, 41, 43, 45, 47, 48, 50, 52,
-               54, 57, 59, 61, 63]
-
-
-# Resto de dividir el numero de la casilla entre 8, y tiene que ser par (para casilla blanca), impar para las otras
 
 def validate_position(value):
-    if not (Game.MIN_CELL <= value <= Game.MAX_CELL):
-        print("SOY YO")
-        raise ValidationError(constants.MSG_ERROR_MOVE)
-
     if (value // 8) % 2 == 0:
         if value % 2 != 0:
-            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
     else:
         if value % 2 == 0:
-            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
 
 
-def valid_move(cat_turn, origin, target):
-    validate_position(target)
-    validate_position(origin)
-
-    print("----- valid_move")
-    print(origin)
-    print(target)
+def valid_move(game, origin, target):
+    # Comprobamos si somos el gato, no podemos ir a un celda donde haya un gato, ni un raton
+    if game.cat_turn:
+        if game.mouse == target or game.cat1 == target or game.cat2 == target or game.cat3 == target or game.cat4 == target:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
 
     x_ori = origin // 8 + 1
     y_ori = origin % 8 + 1
@@ -63,25 +35,24 @@ def valid_move(cat_turn, origin, target):
     x_tar = target // 8 + 1
     y_tar = target % 8 + 1
 
-    print(x_ori)
-    print(y_ori)
-    print(x_tar)
-    print(y_tar)
-
-    if cat_turn:
+    if game.cat_turn:
         if x_tar != x_ori + 1:
-            print("-1")
             raise ValidationError(constants.MSG_ERROR_MOVE)
         elif y_tar != y_ori + 1 and y_tar != y_ori - 1:
-            print("-2")
             raise ValidationError(constants.MSG_ERROR_MOVE)
     else:
         if x_tar != x_ori + 1 and x_tar != x_ori - 1:
-            print("-3")
             raise ValidationError(constants.MSG_ERROR_MOVE)
         elif y_tar != y_ori + 1 and y_tar != y_ori - 1:
-            print("-4")
             raise ValidationError(constants.MSG_ERROR_MOVE)
+
+    #Comprobamos que no estemos intentando realizar justo un movimiento de los extremos
+    if (y_ori == 8 and y_tar == 9) or (y_ori == 1 and y_tar == 0) or (x_ori == 1 and x_tar == 0) or (
+            x_ori == 8 and x_tar == 9):
+        raise ValidationError(constants.MSG_ERROR_MOVE)
+
+    elif not (Game.MIN_CELL <= target <= Game.MAX_CELL):
+        raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
 
 class GameStatus(IntEnum):
@@ -178,14 +149,12 @@ class Move(models.Model):
         # REVISAR no sabemos como imprimir
         return "origin: " + str(self.origin) + "\nTarget: " + str(self.target)
 
-
     def save(self, *args, **kwargs):
 
         if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
-
-        valid_move(self.game.cat_turn, self.origin, self.target)
+        valid_move(self.game, self.origin, self.target)
 
         if self.player == self.game.cat_user:
             if self.game.cat_turn:
@@ -202,13 +171,11 @@ class Move(models.Model):
                     self.game.cat_turn = False
 
                 elif self.game.cat4 == self.origin:
-                    self.game.cat4= self.target
+                    self.game.cat4 = self.target
                     self.game.cat_turn = False
                 else:
-                    print("este1")
                     raise ValidationError(constants.MSG_ERROR_MOVE)
             else:
-                print("este2")
                 raise ValidationError(constants.MSG_ERROR_MOVE)
         elif self.player == self.game.mouse_user:
             if not self.game.cat_turn:
@@ -216,16 +183,14 @@ class Move(models.Model):
                     self.game.mouse = self.target
                     self.game.cat_turn = True
             else:
-                print("este3")
                 raise ValidationError(constants.MSG_ERROR_MOVE)
         else:
-            print("este4")
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
         super(Move, self).save(*args, **kwargs)
 
 
-class SingletonModel(models.Model): # Revisar este copypaste de google
+class SingletonModel(models.Model):  # Revisar este copypaste de google
     """Singleton Django Model"""
 
     class Meta:
@@ -273,7 +238,6 @@ class Counter(SingletonModel):
 
     def save(self, *args, **kwargs):
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
-
 
 
 class UserProfile(models.Model):

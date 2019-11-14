@@ -15,5 +15,4 @@ urlpatterns = [
     path('select_game/', views.select_game_service, name='select_game'),
     path('play/', views.show_game_service, name='show_game'),
     path('move/', views.move_service, name='move'),
-    # REVISAR este ultimo habra que añadirlo, pero aun no hace falta
 ]
