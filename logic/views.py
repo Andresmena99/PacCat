@@ -52,6 +52,8 @@ def index(request):
 @anonymous_required
 def login_service(request):
     if request.method == 'POST':
+        form = UserForm(request.POST)
+
         username = request.POST.get('username')
         password = request.POST.get('password')
 
@@ -67,12 +69,10 @@ def login_service(request):
             else:
                 return HttpResponse("Your mouse_cat account is disabled.")
         else:
-            # REVISAR: Aqui hay que devolver el formulario, pero con el mensaje de error.
-            print("Invalid login details: {0}, {1}".format(username, password))
-            # form = UserForm()
-            # form.add_error('username', "ME CAGO EN LA LECHE")
+            # Devolvemos el error del formulario
+            form.add_error('username', "Usuario/clave no válidos")
             return render(request, 'mouse_cat/login.html',
-                          {'user_form': UserForm()})
+                          {'user_form': form})
     else:
         return render(request, 'mouse_cat/login.html',
                       {'user_form': UserForm()})
@@ -179,7 +179,6 @@ def join_game_service(request):
 
             return render(request, 'mouse_cat/join_game.html',
                           {'game': partida})
-
 
 @login_required
 def select_game_service(request, id=-1):

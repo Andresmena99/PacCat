@@ -191,7 +191,7 @@ class Move(models.Model):
         self.game.save()
 
 
-class SingletonModel(models.Model):  # Revisar este copypaste de google
+class SingletonModel(models.Model):  # REVISAR este copypaste de google
     """Singleton Django Model"""
 
     class Meta:
