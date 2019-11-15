@@ -46,7 +46,8 @@ def valid_move(game, origin, target):
         elif y_tar != y_ori + 1 and y_tar != y_ori - 1:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
-    #Comprobamos que no estemos intentando realizar justo un movimiento de los extremos
+    # Comprobamos que no estemos intentando realizar justo un movimiento de
+    # los extremos
     if (y_ori == 8 and y_tar == 9) or (y_ori == 1 and y_tar == 0) or (x_ori == 1 and x_tar == 0) or (
             x_ori == 8 and x_tar == 9):
         raise ValidationError(constants.MSG_ERROR_MOVE)
@@ -135,7 +136,6 @@ class Game(models.Model):
 
         return response
 
-
 class Move(models.Model):
     origin = models.IntegerField(blank=False, null=False)
     target = models.IntegerField(blank=False, null=False)
@@ -188,6 +188,7 @@ class Move(models.Model):
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
         super(Move, self).save(*args, **kwargs)
+        self.game.save()
 
 
 class SingletonModel(models.Model):  # Revisar este copypaste de google

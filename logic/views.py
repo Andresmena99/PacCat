@@ -205,9 +205,18 @@ def select_game_service(request, id=-1):
 
     # Parte de POST
     if id != -1:
-        request.session[constants.GAME_SELECTED_SESSION_ID] = id
+        game = Game.objects.filter(id=id)
+        if len(game) > 0:
+            game = game[0]
+            if game.status != GameStatus.ACTIVE:
+                return HttpResponseNotFound("El juego seleccionado no esta disponible")
+            if game.cat_user != request.user and game.mouse_user != request.user:
+                return HttpResponseNotFound("Este no es tu juego")
 
-        return show_game_service(request)
+            request.session[constants.GAME_SELECTED_SESSION_ID] = id
+            return show_game_service(request)
+        else:
+            return HttpResponseNotFound("El juego seleccionado no existe")
 
 
 @login_required
@@ -232,14 +241,12 @@ def move_service(request):
                         game=game, player=game.cat_user,
                         origin=form.cleaned_data['origin'],
                         target=form.cleaned_data['target'])
-                    game.save()
 
                 else:
                     Move.objects.create(
                         game=game, player=game.mouse_user,
                         origin=form.cleaned_data['origin'],
                         target=form.cleaned_data['target'])
-                    game.save()
 
             return createBoard(request, game)
 

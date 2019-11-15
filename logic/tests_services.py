@@ -515,6 +515,7 @@ class BckGamesServiceTests(GameRequiredBaseServiceTests):
             game.mouse_user = self.user1
             game.save()
 
+
 #ESTOS FUNCIONAN TODOS
 class CreateGameServiceTests(GameRequiredBaseServiceTests):
     def setUp(self):
@@ -544,6 +545,7 @@ class CreateGameServiceTests(GameRequiredBaseServiceTests):
         self.assertEqual(games[0].cat_user.username, self.user1.username)
         self.assertIsNone(games[0].mouse_user)
         self.assertTrue(games[0].cat_turn)
+
 
 #ESTOS FUNCIONAN TODOS
 class JoinGameServiceTests(BckGamesServiceTests):
@@ -735,6 +737,7 @@ class PlayGameBaseServiceTests(GameRequiredBaseServiceTests):
         session.save()
 
 
+#FUNCIONAN TODOS
 class PlayServiceTests(PlayGameBaseServiceTests):
     def setUp(self):
         super().setUp()
@@ -746,7 +749,6 @@ class PlayServiceTests(PlayGameBaseServiceTests):
         """ Solo puede invocarse por usuarios autenticados """
         self.validate_login_required(self.client1, SHOW_GAME_SERVICE)
 
-    #REVISAR Este falla
     def test2(self):
         """ Validación de la actualización del juego al mover """
         moves = [
@@ -763,7 +765,6 @@ class PlayServiceTests(PlayGameBaseServiceTests):
             if not move["player"] is None:
                 Move.objects.create(
                     game=game, player=move["player"], origin=move["origin"], target=move["target"])
-
             response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
             game = Game.objects.get(id=game.id)
             self.is_play_game(response, game)
