@@ -20,7 +20,6 @@ try:
 except User.DoesNotExist:
     usuario2 = User.objects.create_user(id=11, username='user_with_id_11')
 
-
 # Creo una partida para el usuario con id 10
 game = Game(cat_user=usuario1)
 game.save()
@@ -51,9 +50,9 @@ partida.save()
 
 print("\n\nNos unimos a la partida con menor id, y realizamos los movimientos:\n")
 Move.objects.create(
-                game=partida, player=partida.cat_user, origin=2, target=11)
+    game=partida, player=partida.cat_user, origin=2, target=11)
 
 print(partida)
 Move.objects.create(
-                game=partida, player=partida.mouse_user, origin=59, target=52)
+    game=partida, player=partida.mouse_user, origin=59, target=52)
 print(partida)

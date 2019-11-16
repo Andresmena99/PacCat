@@ -61,7 +61,7 @@ class GameMoveTests(tests.BaseModelTest):
 
         n_moves = 0
         for conf in confs:
-            for target in range(Game.MIN_CELL-1, Game.MAX_CELL+2):
+            for target in range(Game.MIN_CELL - 1, Game.MAX_CELL + 2):
                 self.game.cat1 = conf["cats"][0]
                 self.game.cat2 = conf["cats"][1]
                 self.game.cat3 = conf["cats"][2]
@@ -90,7 +90,7 @@ class GameMoveTests(tests.BaseModelTest):
 
         n_moves = 0
         for conf in confs:
-            for target in range(Game.MIN_CELL-1, Game.MAX_CELL+2):
+            for target in range(Game.MIN_CELL - 1, Game.MAX_CELL + 2):
                 self.game.mouse = conf["origin"]
                 self.game.cat_turn = False
                 self.game.save()
