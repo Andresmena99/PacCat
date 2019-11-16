@@ -12,6 +12,9 @@
 
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password, \
+    CommonPasswordValidator
+from django.core.exceptions import ValidationError
 
 from datamodel.models import UserProfile, Move
 
@@ -122,33 +125,24 @@ class SignupForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
         password2 = self.cleaned_data.get('password2')
 
-        # REVISAR: HAY QUE USAR ESTO PARA VER SI DOS CONTRASEÑAS SON MUY COMUNES,
-        # PERO NO LO HE CONSEGUIDO:
-        # https://docs.djangoproject.com/en/1.9/topics/auth/passwords/#module-django.contrib.auth.password_validation
-        # validators = []
-        # validators.append(UserAttributeSimilarityValidator)
-        # validators.append(CommonPasswordValidator)
-        # validators.append(NumericPasswordValidator)
-        #
-        #
-        # validate_password(password, username, password_validators=validators)
-
+       # Comprobamos la logitud del username
         if len(username) < 6:
             self._errors['username'] = self.error_class([
-                'La longitud minima del nombre de usuario es 6'])
+                'Username is too short. It needs at least 6 characters.'])
 
+        # Validamos la contraseña utilizando los validators definidos
+        # en settings.py AUTH_PASSWORD_VALIDATORS
+        try:
+            validate_password(password, username)
+        except ValidationError as e:
+            self._errors['password'] = e
+
+        # Comprobamos que las contraseñas coinciden
         if password != password2:
             self._errors['password2'] = self.error_class([
                 'Password and Repeat password are not the same'])
 
-        # REVISAR: Hacer una expresion regular o algo asi para contraseñas muy comunes, porque eso yo no se
-        # te lo dejo eric :). De momento imprimo lo de la longitud y lo de que es muy comun porque hay un test
-        # (signupser
-        if len(password) < 6:
-            self._errors['password'] = self.error_class([
-                'Password is too short. It needs at least 6 characters. too common'])
-
-        # devolver los errores en caso de haberlos
+        # Devolver los errores en caso de haberlos
         return self.cleaned_data
 
 
