@@ -12,6 +12,23 @@ from logic.forms import SignupForm, MoveForm, UserForm
 
 
 def anonymous_required(f):
+    """
+        Decorador para limitar funciones a usuarios anonimos.
+
+        Parameters
+        ----------
+        f : funcion
+            Funcion a ejecutar
+
+        Returns
+        -------
+        HttpResponse : error o la respuesta de la funcion.
+
+        Author
+        -------
+            Profesores PSI
+    """
+
     def wrapped(request):
         if request.user.is_authenticated:
             return HttpResponseForbidden(
@@ -24,11 +41,53 @@ def anonymous_required(f):
 
 
 def errorHTTP(request, exception=None):
+    """
+        Crea un error http basadp en una solicitud y lo devuelve
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+        exception : string
+            Almacena el error a mostrar.
+
+        Returns
+        -------
+        HttpResponse : error o la respuesta de la funcion.
+
+        Author
+        -------
+            Profesores PSI
+    """
     context_dict = {'msg_error': exception}
     return render(request, "mouse_cat/error.html", context_dict)
 
 
 def end_game(request, winner, game):
+    """
+        Funcion que genera la pagina html que muestra el resultado de una
+        partida.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+        winner : int
+            Indica quien ha sido el ganador de la partida:
+                - winner == 1: ganador gato
+                - winner == 2: ganador ratón
+        game : Game
+            Juego actual
+
+        Returns
+        -------
+        Html : archivo html con el resumen de final de partida.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # La partida ha terminado. Imprimiremos una ultima vez el
     # tablero
     board = [0] * 64
@@ -58,11 +117,45 @@ def end_game(request, winner, game):
 
 
 def index(request):
+    """
+        Funcion que genera la pagina html inicial.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con la página incial
+
+        Author
+        -------
+            Andrés Mena
+    """
     return render(request, 'mouse_cat/index.html')
 
 
 @anonymous_required
 def login_service(request):
+    """
+        Funcion que genera la pagina html con los formularios para inciar
+        sesión (método GET) y de recibir estos formularios (método POST).
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el formulario de login.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # Si alguien esta intentando iniciar sesion, es metodo post
     if request.method == 'POST':
         form = UserForm(request.POST)
@@ -98,6 +191,25 @@ def login_service(request):
 
 @login_required
 def logout_service(request):
+    """
+        Funcion que se encarga de cerrar la sesión de los usuarios y
+        genera la pagina html informando de que el cierre se ha realizado
+        correctamente.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el resultado del logout.
+
+        Author
+        -------
+            Eric Morales
+    """
+
     # Obtenemos que usuario estas conectado, y procedemos a cerrar sesion
     user = request.user
     logout(request)
@@ -111,6 +223,24 @@ def logout_service(request):
 
 @anonymous_required
 def signup_service(request):
+    """
+        Funcion que genera la pagina html con los formularios para registrarse
+        (método GET) y de recibir estos formularios (método POST).
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el formulario de registro.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # Si el metodo es post, significa que nos estan mandando un formulario con
     # informacion de inicio de sesion
     if request.method == 'POST':
@@ -151,6 +281,24 @@ def signup_service(request):
 
 
 def counter_service(request):
+    """
+        Funcion que genera la pagina html para mostrar el valor del counter
+        y que se encarga de incrementarlo en cada solicitud.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el estado del counter.
+
+        Author
+        -------
+            Eric Morales
+    """
+
     # Si el contador ya esta definido en la sesion, lo incrementamos en 1
     if "counter" in request.session:
         request.session["counter"] += 1
@@ -170,6 +318,24 @@ def counter_service(request):
 
 @login_required
 def create_game_service(request):
+    """
+        Funcion que crea una partida nueva y muestra una pagina avisando
+        de ello.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el resultado de la creación de la partida.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # Creamos una partida asignandosela al usuario que esta dentro del sistema
     new_game = Game(cat_user=request.user)
     new_game.save()
@@ -178,6 +344,24 @@ def create_game_service(request):
 
 @login_required
 def join_game_service(request):
+    """
+        Funcion que nos 'mete' en una partida existente y muestra una
+        pagina avisando de ello.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el resultado de unirnos a una partida.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # Tenemos que meter al usuario en la partida con id mas alto
     # Entre todas las partidas, miro las que solo tienen un jugador
     un_solo_jugador = Game.objects.filter(mouse_user=None)
@@ -208,6 +392,28 @@ def join_game_service(request):
 
 @login_required
 def select_game_service(request, id=-1):
+    """
+        Funcion que nos muestra todas las partidas existentes y nos permite
+        comenzar a jugar en cualquiera de ellas con tan solo un click
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+        id : int (default -1)
+            Id de la partida seleccionada para jugar, por defecto a -1
+            lo cual quiere decir que queremos ver la lista de partidas.
+
+        Returns
+        -------
+        Html : archivo html con una lista de partidas o con el tablero
+               listo para jugar
+
+        Author
+        -------
+            Eric Morales
+    """
+
     if request.method == 'GET' and id == -1:
         # Tengo que añadir un campo id a cada partida, para luego poder hacer
         # bien el template
@@ -252,6 +458,23 @@ def select_game_service(request, id=-1):
 
 @login_required
 def show_game_service(request):
+    """
+        Funcion que nos muestra el juego seleccionado listo para jugar.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con con el tablero listo para jugar.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # Muestra el estado de la partida que se encuentra en la sesion. En caso
     # de que no se haya ninguna partida en la sesion, devuelve un mensaje de
     # error
@@ -273,6 +496,25 @@ def show_game_service(request):
 
 @login_required
 def move_service(request):
+    """
+        Funcion que realiza el movimiento solicitado por el formulario
+        MoveForm usando el método POST y muestra el resultado del mismo.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con el resultado del movimiento, ya sea el
+        tablero actualizado, el final del juego o un error.
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     if request.method == 'POST':
         # Nos mandan un formulario que contiene el movimento que se quiere
         # realizar.
@@ -324,6 +566,30 @@ def move_service(request):
 
 
 def create_board(request, game, form=None):
+    """
+        Funcion que devuelve el tablero de la partida pasada como parámetro,
+        devolviendo además los errores correspondientes, si los hay
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+        game : Game
+            Partida correspondiente
+        form : Form (default None)
+            Formulario que contiene los errores correspondientes al ultimo
+            movimiento que se ha intentado realizar
+
+        Returns
+        -------
+        Html : archivo html con el resultado del movimiento, ya sea el
+        tablero actualizado, el final del juego o un error.
+
+        Author
+        -------
+            Eric Morales
+    """
+
     # Creamos el array que representa el tablero
     if game is not None:
         # Primero colocamos todas las casillas a 0, y luego donde estén los
@@ -352,12 +618,28 @@ def create_board(request, game, form=None):
                        'move_form': MoveForm()})
 
 
-# Funcion que comprueba si hay ganador
-# Retorno:
-# 0 == NO WINNER
-# 1 == CAT_WINNER
-# 2 == MOUSE_WINNER
 def check_winner(game):
+    """
+        Funcion que comprueba si hay ganador.
+
+        Parameters
+        ----------
+        game : Game
+            Partida correspondiente
+
+        Returns
+        -------
+        int : función que indica cual ha sido el ganador de una partida,
+              los posibles resultados son los siguientes:
+                - 0 == NO WINNER
+                - 1 == CAT_WINNER
+                - 2 == MOUSE_WINNER
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     if game is not None:
         # Sacamos la posicion de cada gato y raton, con sus coordenadas x e y
         cat1 = game.cat1

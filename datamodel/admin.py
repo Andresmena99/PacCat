@@ -10,10 +10,20 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class PageAdmin(admin.ModelAdmin):
+    """
+        Pagina para el administrador
+
+        Attributes
+        ----------
+        list_display : array
+
+        Methods
+        -------
+        none
+    """
     list_display = ('title', 'category', 'url')
 
 
-# Update the registration to include this customised interface
 admin.site.register(UserProfile)
 admin.site.register(Game)
 admin.site.register(Move)
