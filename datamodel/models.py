@@ -181,7 +181,8 @@ class Game(models.Model):
     cat_turn = models.BooleanField(default=True, blank=False, null=False)
 
     # REVISAR comentar en la memoria
-    status = models.IntegerField(choices=GameStatus_opts, default=GameStatus.CREATED)
+    status = models.IntegerField(choices=GameStatus_opts,
+                                 default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
         """

@@ -1,9 +1,22 @@
+"""
+    Formularios utilizados a lo largo de la aplicación.
+        - Game
+        - Move
+        - Counter
+
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
+"""
+
 from django import forms
 from django.contrib.auth.models import User
 
 from datamodel.models import UserProfile, Move
 
 
+# REVISAR creo que hay que borrar esto
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
@@ -11,6 +24,19 @@ class UserProfileForm(forms.ModelForm):
 
 
 class MoveForm(forms.ModelForm):
+    """
+        Formulario que recoge un movimiento.
+
+        Attributes
+        ----------
+        origin : IntegerField
+        target : IntegerField
+
+        Methods
+        -------
+        clean(self)
+            Llama a la función superior y comprueba si hay errores.
+    """
     origin = forms.IntegerField(initial=0)
     target = forms.IntegerField(initial=0)
 
@@ -19,6 +45,21 @@ class MoveForm(forms.ModelForm):
         fields = ('origin', 'target')
 
     def clean(self):
+        """
+            Llama a la función superior y comprueba si hay errores.
+
+            Parameters
+            ----------
+            none
+
+            Returns
+            -------
+            string : errores en caso de haberlos
+
+            Author
+            -------
+                Andrés Mena
+        """
         super(MoveForm, self).clean()
 
         # extract the username and text field from the data
@@ -33,6 +74,21 @@ class MoveForm(forms.ModelForm):
 
 
 class SignupForm(forms.ModelForm):
+    """
+        Formulario para realizar el registro de un usuario
+
+        Attributes
+        ----------
+        username : CharField
+        password : CharField
+        password2 : CharField
+
+        Methods
+        -------
+        clean(self)
+            Llama a la función superior y comprueba si hay errores
+    """
+
     username = forms.CharField(max_length=128)
     password = forms.CharField(max_length=128, widget=forms.PasswordInput)
     password2 = forms.CharField(max_length=128, widget=forms.PasswordInput)
@@ -44,6 +100,22 @@ class SignupForm(forms.ModelForm):
 
     # Funcion usada para validar un formulario
     def clean(self):
+        """
+            Llama a la función superior y comprueba si hay errores.
+
+            Parameters
+            ----------
+            none
+
+            Returns
+            -------
+            string : errores en caso de haberlos
+
+            Author
+            -------
+                Andrés Mena
+        """
+
         super(SignupForm, self).clean()
         # extract the username and text field from the data
         username = self.cleaned_data.get('username')
@@ -81,6 +153,20 @@ class SignupForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
+    """
+        Formulario para iniciar sesión.
+
+        Attributes
+        ----------
+        username : CharField
+        password : CharField
+
+        Methods
+        -------
+        clean_form(self)
+            Función para llamar al clean del campo password.
+    """
+
     username = forms.CharField(max_length=32, required=True)
     password = forms.CharField(widget=forms.PasswordInput())
 
@@ -89,4 +175,19 @@ class UserForm(forms.ModelForm):
         fields = ('username', 'password')
 
     def clear_form(self):
+        """
+            Función para llamar al clean del campo password.
+
+            Parameters
+            ----------
+                none
+
+            Returns
+            -------
+                none
+
+            Author
+            -------
+                Andrés Mena
+        """
         self.password.clean()
