@@ -1,3 +1,16 @@
+"""
+    Modelos de datos utilizados a lo largo de la aplicación.
+        - Game
+        - Move
+        - Counter
+
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
+"""
+
+
 from enum import IntEnum
 
 from django.contrib.auth.models import User
@@ -14,6 +27,30 @@ MOUSEPOS = 59
 
 
 def validate_position(value):
+    """
+        Función que comprueba si una posición en el tablero se encuentra dentro
+        de las casillas blancas, es decir las casillas a las que pueden moverse
+        los jugadores.
+
+        Parameters
+        ----------
+        value : int
+            Posición del tablero
+
+        Returns
+        -------
+        void : void
+
+        Raises
+        -------
+        ValidationError
+            Si la posición no es correcta.
+
+        Author
+        -------
+            Eric Morales
+    """
+
     if (value // 8) % 2 == 0:
         if value % 2 != 0:
             raise ValidationError(constants.MSG_ERROR_MOVE)
@@ -23,10 +60,36 @@ def validate_position(value):
 
 
 def valid_move(game, origin, target):
+    """
+        Función que comprueba si un movimiento es valido, teniendo en
+        cuenta la posición del resto de jugadores.
+
+        Parameters
+        ----------
+        game : int
+            Juego actual
+        origin : int
+            Posición del tablero origen
+        target : int
+            Posición del tablero destino
+
+        Returns
+        -------
+        boolean : True si el movimiento es correcto
+
+        Raises
+        -------
+        ValidationError
+            Si el movimiento no es correcto
+
+        Author
+        -------
+            Andrés Mena
+    """
+
     # Comprobamos que no podemos ir a un celda donde haya un gato, ni un raton
     if game.mouse == target or game.cat1 == target or game.cat2 == target or game.cat3 == target or game.cat4 == target:
         raise ValidationError(constants.MSG_ERROR_MOVE)
-
 
     x_ori = origin // 8 + 1
     y_ori = origin % 8 + 1
@@ -47,8 +110,8 @@ def valid_move(game, origin, target):
 
     # Comprobamos que no estemos intentando realizar justo un movimiento de
     # los extremos
-    if (y_ori == 8 and y_tar == 9) or (y_ori == 1 and y_tar == 0) or (x_ori == 1 and x_tar == 0) or (
-            x_ori == 8 and x_tar == 9):
+    if (y_ori == 8 and y_tar == 9) or (y_ori == 1 and y_tar == 0) or \
+            (x_ori == 1 and x_tar == 0) or (x_ori == 8 and x_tar == 9):
         raise ValidationError(constants.MSG_ERROR_MOVE)
 
     elif not (Game.MIN_CELL <= target <= Game.MAX_CELL):
@@ -59,6 +122,11 @@ def valid_move(game, origin, target):
 
 
 class GameStatus(IntEnum):
+    """
+        Enumeracion que almacena los estados en los que se puede encontrar
+        juego.
+    """
+
     CREATED = 0
     ACTIVE = 1
     FINISHED = 2
@@ -69,6 +137,29 @@ GameStatus_opts = [(GameStatus.CREATED, 0), (GameStatus.ACTIVE, 1),
 
 
 class Game(models.Model):
+    """
+        Modelo que almacena toda la informacion relativa a un juego
+
+        Attributes
+        ----------
+        cat_user : ForeignKey
+        mouse_user : ForeignKey
+        cat1 : IntegerField
+        cat2 : IntegerField
+        cat3 : IntegerField
+        cat4 : IntegerField
+        mouse : IntegerField
+        cat_turn : BooleanField
+
+        Methods
+        -------
+        save(self, *args, **kwargs)
+            Almacena el juego en la base de datos.
+        __str__(self)
+            Devuelve una cadena con toda la información necesaria de un objeto
+            de esta clase.
+    """
+
     MIN_CELL = 0
     MAX_CELL = 63
 
@@ -93,6 +184,25 @@ class Game(models.Model):
     status = models.IntegerField(choices=GameStatus_opts, default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
+        """
+            Almacena el juego en la base de datos.
+
+            Parameters
+            ----------
+            *args : array
+                Argumentos para llamar a la funcion save de models.Model
+            **kwargs : array
+                Argumentos para llamar a la funcion save de models.Model
+
+            Returns
+            -------
+            void : void
+
+            Author
+            -------
+                Andrés Mena
+        """
+
         validate_position(self.cat1)
         validate_position(self.cat2)
         validate_position(self.cat3)
@@ -114,6 +224,23 @@ class Game(models.Model):
         super(Game, self).save(*args, **kwargs)
 
     def __str__(self):
+        """
+            Devuelve una cadena con toda la información necesaria de un objeto
+            de esta clase.
+
+            Parameters
+            ----------
+            void : void
+
+            Returns
+            -------
+                string : cadena formateada
+
+            Author
+            -------
+                Andrés Mena
+       """
+
         response = "(" + str(self.id) + ", "
         if self.status == GameStatus.ACTIVE:
             response += "Active)\t"
@@ -137,6 +264,27 @@ class Game(models.Model):
 
 
 class Move(models.Model):
+    """
+        Modelo que almacena toda la informacion relativa a un movimiento
+
+        Attributes
+        ----------
+        origin : IntegerField
+        target : IntegerField
+        game : ForeignKey
+        player : ForeignKey
+        date : DateTimeField
+
+        Methods
+        -------
+        save(self, *args, **kwargs)
+            Almacena el juego en la base de datos.
+        __str__(self)
+            Devuelve una cadena con toda la información necesaria de un objeto
+            de esta clase.
+
+    """
+
     origin = models.IntegerField(blank=False, null=False)
     target = models.IntegerField(blank=False, null=False)
     game = models.ForeignKey(Game,
@@ -146,10 +294,49 @@ class Move(models.Model):
     date = models.DateTimeField(auto_now_add=True, blank=False, null=False)
 
     def __str__(self):
+        """
+            Devuelve una cadena con toda la información necesaria de un objeto
+            de esta clase.
+
+            Parameters
+            ----------
+            void : void
+
+            Returns
+            -------
+                string : cadena formateada
+
+            Author
+            -------
+                Andrés Mena
+        """
         return "Game: "+str(self.game.id)+" player: "+str(self.player)+\
                " origin: " + str(self.origin) + " target: " + str(self.target)
 
     def save(self, *args, **kwargs):
+        """
+            Almacena el movimiento en la base de datos.
+
+            Parameters
+            ----------
+            *args : array
+                Argumentos para llamar a la funcion save de models.Model
+            **kwargs : array
+                Argumentos para llamar a la funcion save de models.Model
+
+            Returns
+            -------
+            void : void
+
+            Raises
+            -------
+            ValidationError
+                Si el movimiento no es correcto
+
+            Author
+            -------
+                Andrés Mena
+        """
 
         if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
             raise ValidationError(constants.MSG_ERROR_MOVE)
@@ -191,26 +378,68 @@ class Move(models.Model):
         self.game.save()
 
 
-class SingletonModel(models.Model):  # REVISAR este copypaste de google
-    """Singleton Django Model"""
+class SingletonModel(models.Model):
+    """
+        Modelo abstracto del cual heredan todos los modelos que deban
+        utilizar la estructura Singleton
+
+        Attributes
+        ----------
+        none
+
+        Methods
+        -------
+        save(self, *args, **kwargs)
+            Almacena el objeto en la base de datos (borrando el resto)
+        load(cls)
+            Devuelve de la base de datos el objeto único del tipo
+            Singleton.
+    """
 
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
         """
-        Save object to the database. Removes all other entries if there
-        are any.
+            Almacena el objeto en la base de datos, eliminando el resto de
+            entradas de este tipo.
+
+            Parameters
+            ----------
+            *args : array
+                Argumentos para llamar a la funcion save de models.Model
+            **kwargs : array
+                Argumentos para llamar a la funcion save de models.Model
+
+            Returns
+            -------
+            void : void
+
+            Author
+            -------
+                Eric Morales
         """
+
         self.__class__.objects.exclude(id=self.id).delete()
         super(SingletonModel, self).save(*args, **kwargs)
 
     @classmethod
     def load(cls):
         """
-        Load object from the database. Failing that, create a new empty
-        (default) instance of the object and return it (without saving it
-        to the database).
+            Devuelve de la base de datos el objeto único del tipo
+            Singleton. Si este no existe crea uno nuevo.
+
+            Parameters
+            ----------
+            none
+
+            Returns
+            -------
+            SingletonModel : objeto recuperado/creado.
+
+            Author
+            -------
+                Eric Morales
         """
 
         try:
@@ -220,27 +449,146 @@ class SingletonModel(models.Model):  # REVISAR este copypaste de google
 
 
 class CounterManager(models.Manager):
+    """
+        Clase que representa al manager de los objetos de tipo Counter,
+        es decir declara las funciones que llamamos utilizando la sentencia
+        Counter.objects.
+
+        Attributes
+        ----------
+        none
+
+        Methods
+        -------
+        get_current_value(self)
+            Devuelve el valor de contador que se encuentra en la base de datos.
+        inc(self)
+            Incrementa el valor del contador y lo almacena en la base de datos.
+        create(self, *args, **kwargs)
+            Sobreescribimos el método create para evitar su uso.
+    """
+
     def get_current_value(self):
+        """
+            Devuelve el valor de contador que se encuentra en la base de datos.
+
+            Parameters
+            ----------
+                none
+
+            Returns
+            -------
+            int : value
+
+            Author
+            -------
+                Eric Morales
+        """
+
         return Counter.load().value
 
     def inc(self):
+        """
+            Incrementa el valor del contador y lo almacena en la base de datos.
+
+            Parameters
+            ----------
+                none
+
+            Returns
+            -------
+            int : value
+
+            Author
+            -------
+                Eric Morales
+        """
+
         counter = Counter.load()
         counter.value += 1
         super(Counter, counter).save()
         return self.get_current_value()
 
     def create(self, *args, **kwargs):
+        """
+            Sobreescribimos el método create para evitar su uso.
+
+            Parameters
+            ----------
+            *args : array
+                Para sobreescribir a la funcion create de models.Manager
+            **kwargs : array
+                Para sobreescribir a la funcion create de models.Manager
+
+            Returns
+            -------
+            void : void
+
+            Raises
+            -------
+            ValidationError
+                Si intentamos crear una instancia nueva del objeto, no lo
+                permitimos lanzando esta excepción.
+
+            Author
+            -------
+                Eric Morales
+        """
+
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
 
 class Counter(SingletonModel):
+    """
+        Modelo que almacena toda la información relativa al contador.
+        Hereda del modelo SingletonModel, para evitar que exista mas de una
+        instancia de este objeto.
+
+        Attributes
+        ----------
+        value : IntegerField
+        objects : CounterManager()
+            Sobreescribimos el Manager por defecto.
+
+        Methods
+        -------
+        save(self, *args, **kwargs)
+            Sobreescribimos el método save para evitar su uso.
+    """
+
     value = models.IntegerField(default=0, blank=False, null=False)
     objects = CounterManager()
 
     def save(self, *args, **kwargs):
+        """
+            Sobreescribimos el método save para evitar su uso.
+
+            Parameters
+            ----------
+            *args : array
+                Para sobreescribir a la funcion save de models.Model
+            **kwargs : array
+                Para sobreescribir a la funcion save de models.Model
+
+            Returns
+            -------
+            void : void
+
+            Raises
+            -------
+            ValidationError
+                Si intentamos crear una instancia nueva del objeto, no lo
+                permitimos lanzando esta excepción.
+
+            Author
+            -------
+                Eric Morales
+        """
+
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
 
+# REVISAR creo que hay que borrar esto
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User, on_delete=models.CASCADE)

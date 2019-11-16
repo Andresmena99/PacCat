@@ -4,7 +4,7 @@ from datamodel.models import Game, Move
 from datamodel.models import UserProfile
 
 
-# Add in this class to customise the Admin Interface
+# REVISAR creo que hay que borrar esto
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 

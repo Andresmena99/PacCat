@@ -1,7 +1,14 @@
-# Mensajes de error constantes usados a lo largo de la aplicacion
+"""
+    Mensajes de error constantes usados a lo largo de la aplicacion
 
-MSG_ERROR_INVALID_CELL = "Invalid cell for a cat or the mouse|Gato o ratón en " \
-                         "posición no válida"
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
+"""
+
+MSG_ERROR_INVALID_CELL = "Invalid cell for a cat or the mouse|Gato o ratón " \
+                         "en posición no válida "
 MSG_ERROR_GAMESTATUS = "Game status not valid|Estado no válido"
 MSG_ERROR_MOVE = "Move not allowed|Movimiento no permitido"
 MSG_ERROR_NEW_COUNTER = "Insert not allowed|Inseción no permitida"
