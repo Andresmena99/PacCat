@@ -10,7 +10,6 @@
         Eric Morales
 """
 
-
 from enum import IntEnum
 
 from django.contrib.auth.models import User
@@ -89,7 +88,8 @@ def valid_move(game, origin, target):
     """
 
     # Comprobamos que no podemos ir a un celda donde haya un gato, ni un raton
-    if game.mouse == target or game.cat1 == target or game.cat2 == target or game.cat3 == target or game.cat4 == target:
+    if game.mouse == target or game.cat1 == target or game.cat2 == target \
+            or game.cat3 == target or game.cat4 == target:
         raise ValidationError(constants.MSG_ERROR_MOVE)
 
     x_ori = origin // 8 + 1
@@ -254,9 +254,10 @@ class Game(models.Model):
 
         response += "Cat [X] " if self.cat_turn else "Cat [ ] "
 
-        response += str(self.cat_user) + "(" + str(self.cat1) \
-                    + ", " + str(self.cat2) + ", " + str(self.cat3) \
-                    + ", " + str(self.cat4) + ")"
+        response += str(self.cat_user) + "(" + str(self.cat1) + ", "
+        response += str(self.cat2) + ", " + str(self.cat3)
+        response += ", " + str(self.cat4) + ")"
+
         if self.mouse_user:
             response += " --- Mouse "
             response += "[X] " if not self.cat_turn else "[ ] "
@@ -312,8 +313,9 @@ class Move(models.Model):
             -------
                 Andrés Mena
         """
-        return "Game: "+str(self.game.id)+" player: "+str(self.player)+\
-               " origin: " + str(self.origin) + " target: " + str(self.target)
+        return "Game: " + str(self.game.id) + " player: " \
+               + str(self.player) + " origin: " + str(self.origin) \
+               + " target: " + str(self.target)
 
     def save(self, *args, **kwargs):
         """
@@ -340,7 +342,8 @@ class Move(models.Model):
                 Andrés Mena
         """
 
-        if self.game.status == GameStatus.CREATED or self.game.status == GameStatus.FINISHED:
+        if self.game.status == GameStatus.CREATED \
+                or self.game.status == GameStatus.FINISHED:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
         valid_move(self.game, self.origin, self.target)

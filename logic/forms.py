@@ -69,7 +69,8 @@ class MoveForm(forms.ModelForm):
         target = self.cleaned_data.get('target')
 
         if origin < 0 or origin > 63 or target > 63 or target < 0:
-            self.add_error(None, 'Los campos origin y target tienen que estar en el rango [0,63]')
+            self.add_error(None, 'Los campos origin y target tienen que' +
+                           ' estar en el rango [0,63]')
 
         # devolver los errores en caso de haberlos
         return self.cleaned_data
@@ -124,7 +125,7 @@ class SignupForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
         password2 = self.cleaned_data.get('password2')
 
-       # Comprobamos la logitud del username
+        # Comprobamos la logitud del username
         if len(username) < 6:
             self._errors['username'] = self.error_class([
                 'Username is too short. It needs at least 6 characters.'])

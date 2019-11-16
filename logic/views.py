@@ -9,6 +9,7 @@
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -253,23 +254,21 @@ def signup_service(request):
     # Si el metodo es post, significa que nos estan mandando un formulario con
     # informacion de inicio de sesion
     if request.method == 'POST':
-        formulario = SignupForm(request.POST)
+        form = SignupForm(request.POST)
 
         # Esto llamara a la funcion clean para hacer la comprobacion del
         # formulario
-        if formulario.is_valid():
-            new_user = formulario.save()
+        if form.is_valid():
+            new_user = form.save()
 
             # Sacamos el valor de la contraseña, y se lo asignamos al usuario
             # antes de guardar
-            new_user.set_password(formulario.cleaned_data['password'])
+            new_user.set_password(form.cleaned_data['password'])
             new_user.save()
 
             # Procedemos a iniciar sesion del usuario en la pagina
-            new_user = authenticate(username=
-                                    formulario.cleaned_data['username'],
-                                    password=
-                                    formulario.cleaned_data['password'])
+            new_user = authenticate(username=form.cleaned_data['username'],
+                                    password=form.cleaned_data['password'])
             login(request, new_user)
 
             # Devolvemos una pagina que indica que se ha registrado
@@ -280,7 +279,7 @@ def signup_service(request):
         else:
             # Formulario invalido, devolvemos los errores
             return render(request,
-                          'mouse_cat/signup.html', {'user_form': formulario})
+                          'mouse_cat/signup.html', {'user_form': form})
 
     # Si el metodo es get, es la primera vez que accede a la página, por lo
     # que le damos un formulario nuevo para que lo rellene
@@ -450,7 +449,8 @@ def select_game_service(request, id=-1):
                 return HttpResponseNotFound(
                     constants.ERROR_SELECTED_GAME_NOT_AVAILABLE)
 
-            if game.cat_user != request.user and game.mouse_user != request.user:
+            if game.cat_user != request.user \
+                    and game.mouse_user != request.user:
                 # Error porque el jugador que solicita el juego no es ni el
                 # gato ni el raton
                 return HttpResponseNotFound(
@@ -547,7 +547,7 @@ def move_service(request):
                             game=game, player=game.mouse_user,
                             origin=form.cleaned_data['origin'],
                             target=form.cleaned_data['target'])
-                except:
+                except ValidationError:
                     # Añadimos el error del movimiento al formulario
                     form.add_error(None, constants.MSG_ERROR_MOVE)
 
@@ -685,7 +685,7 @@ def check_winner(game):
                     if valid_move(game, mouse, i):
                         # Si tengo un movimiento valido, todavia no he perdido
                         flag = 1
-                except:
+                except ValidationError:
                     pass
 
             if flag == 0:
