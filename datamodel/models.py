@@ -23,10 +23,10 @@ def validate_position(value):
 
 
 def valid_move(game, origin, target):
-    # Comprobamos si somos el gato, no podemos ir a un celda donde haya un gato, ni un raton
-    if game.cat_turn:
-        if game.mouse == target or game.cat1 == target or game.cat2 == target or game.cat3 == target or game.cat4 == target:
-            raise ValidationError(constants.MSG_ERROR_MOVE)
+    # Comprobamos que no podemos ir a un celda donde haya un gato, ni un raton
+    if game.mouse == target or game.cat1 == target or game.cat2 == target or game.cat3 == target or game.cat4 == target:
+        raise ValidationError(constants.MSG_ERROR_MOVE)
+
 
     x_ori = origin // 8 + 1
     y_ori = origin % 8 + 1
@@ -54,18 +54,18 @@ def valid_move(game, origin, target):
     elif not (Game.MIN_CELL <= target <= Game.MAX_CELL):
         raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
+    # Si el movimiento es valido, y llego hasta aqui, devuelvo true
+    return True
+
 
 class GameStatus(IntEnum):
     CREATED = 0
     ACTIVE = 1
     FINISHED = 2
 
-    @classmethod
-    def get_values(cls):
-        return (
-            (cls.CREATED, 'Created'),
-            (cls.ACTIVE, 'Active'),
-            (cls.FINISHED, 'Finished'))
+
+GameStatus_opts = [(GameStatus.CREATED, 0), (GameStatus.ACTIVE, 1),
+                   (GameStatus.FINISHED, 2)]
 
 
 class Game(models.Model):
@@ -90,7 +90,7 @@ class Game(models.Model):
     cat_turn = models.BooleanField(default=True, blank=False, null=False)
 
     # REVISAR comentar en la memoria
-    status = models.IntegerField(default=GameStatus.CREATED)
+    status = models.IntegerField(choices=GameStatus_opts, default=GameStatus.CREATED)
 
     def save(self, *args, **kwargs):
         validate_position(self.cat1)
@@ -135,6 +135,7 @@ class Game(models.Model):
 
         return response
 
+
 class Move(models.Model):
     origin = models.IntegerField(blank=False, null=False)
     target = models.IntegerField(blank=False, null=False)
@@ -145,8 +146,8 @@ class Move(models.Model):
     date = models.DateTimeField(auto_now_add=True, blank=False, null=False)
 
     def __str__(self):
-        # REVISAR no sabemos como imprimir
-        return "origin: " + str(self.origin) + "\nTarget: " + str(self.target)
+        return "Game: "+str(self.game.id)+" player: "+str(self.player)+\
+               " origin: " + str(self.origin) + " target: " + str(self.target)
 
     def save(self, *args, **kwargs):
 

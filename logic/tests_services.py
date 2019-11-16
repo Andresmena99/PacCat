@@ -299,7 +299,6 @@ class LogInOutServiceTests(ServiceBaseTest):
         self.validate_login_required(self.client2, LOGIN_SERVICE)
         self.assertFalse(self.client2.session.get(USER_SESSION_ID, False))
 
-    # REVISAR: Este falla. @anonymous??
     def test3(self):
         """ Solo los usuarios anónimos pueden invocar al servicio """
         self.validate_anonymous_required(self.client1, LOGIN_SERVICE)
@@ -318,7 +317,6 @@ class LogInOutServiceTests(ServiceBaseTest):
             response = session["client"].get(reverse(LANDING_PAGE), follow=True)
             self.is_landing_autenticated(response, session["user"])
 
-    # REVISAR: Este falla
     def test5(self):
         """ Error de login si el usuario no existe """
         User.objects.filter(id=self.user1.id).delete()
@@ -326,7 +324,6 @@ class LogInOutServiceTests(ServiceBaseTest):
         response = self.client1.post(reverse(LOGIN_SERVICE), self.paramsUser1, follow=True)
         self.is_login_error(response)
 
-    # REVISAR: Este falla
     def test6(self):
         """ Error de login la clave no es correcta """
         User.objects.filter(id=self.user1.id).delete()
@@ -358,7 +355,6 @@ class SignupServiceTests(ServiceBaseTest):
         User.objects.filter(id=self.user1.id).delete()
         self.assertTrue(forms.SignupForm(self.paramsUser1).is_valid())
 
-    # REVISAR: Este falla. @anonymous otra vez??
     def test1(self):
         """ Solo los usuarios anónimos tienen acceso """
         self.validate_anonymous_required(self.client1, SIGNUP_SERVICE)
@@ -515,7 +511,6 @@ class BckGamesServiceTests(GameRequiredBaseServiceTests):
             game.save()
 
 
-# ESTOS FUNCIONAN TODOS
 class CreateGameServiceTests(GameRequiredBaseServiceTests):
     def setUp(self):
         super().setUp()
@@ -546,7 +541,6 @@ class CreateGameServiceTests(GameRequiredBaseServiceTests):
         self.assertTrue(games[0].cat_turn)
 
 
-# ESTOS FUNCIONAN TODOS
 class JoinGameServiceTests(BckGamesServiceTests):
     def setUp(self):
         super().setUp()
@@ -669,7 +663,6 @@ class SelectGameServiceTests(GameRequiredBaseServiceTests):
         self.is_select_game_nocat(response)
         self.assertIn(str(game), self.decode(response.content))
 
-    # REVISAR: falla
     def test4(self):
         """ Selección correcta de juego como ratón y como gato """
         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
@@ -684,7 +677,6 @@ class SelectGameServiceTests(GameRequiredBaseServiceTests):
         self.client2.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
         self.assertEqual(Decimal(self.client2.session.get(constants.GAME_SELECTED_SESSION_ID)), game.id)
 
-    # REVISAR: falla
     def test5(self):
         """ Selección por url de un juego que no existe """
         id_max = Game.objects.aggregate(Max("id"))["id__max"]
@@ -694,7 +686,6 @@ class SelectGameServiceTests(GameRequiredBaseServiceTests):
         response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': id_max + 1}), follow=True)
         self.assertEqual(response.status_code, 404)
 
-    # REVISAR: falla
     def test6(self):
         """ Selección por url de un juego que no ha comenzado """
         game = Game.objects.create(cat_user=self.user1)
@@ -702,7 +693,6 @@ class SelectGameServiceTests(GameRequiredBaseServiceTests):
         response = self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)
         self.assertEqual(response.status_code, 404)
 
-    # REVISAR: falla
     def test7(self):
         """ Selección por url de un juego del que no soy juegador """
         try:
@@ -736,7 +726,6 @@ class PlayGameBaseServiceTests(GameRequiredBaseServiceTests):
         session.save()
 
 
-# FUNCIONAN TODOS
 class PlayServiceTests(PlayGameBaseServiceTests):
     def setUp(self):
         super().setUp()
@@ -769,7 +758,6 @@ class PlayServiceTests(PlayGameBaseServiceTests):
             self.is_play_game(response, game)
 
 
-# FUNCIONAN TODOS
 class MoveServiceTests(PlayGameBaseServiceTests):
     def setUp(self):
         super().setUp()

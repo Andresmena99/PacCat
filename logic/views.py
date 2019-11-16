@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from datamodel import constants
-from datamodel.models import Counter, Game, GameStatus, Move
+from datamodel.models import Counter, Game, GameStatus, Move, valid_move
 from logic.forms import SignupForm, MoveForm, UserForm
 
 
@@ -26,6 +26,35 @@ def anonymous_required(f):
 def errorHTTP(request, exception=None):
     context_dict = {'msg_error': exception}
     return render(request, "mouse_cat/error.html", context_dict)
+
+
+def end_game(request, winner, game):
+    # La partida ha terminado. Imprimiremos una ultima vez el
+    # tablero
+    board = [0] * 64
+    board[game.cat1] = 1
+    board[game.cat2] = 1
+    board[game.cat3] = 1
+    board[game.cat4] = 1
+    board[game.mouse] = -1
+
+    # Cambiamos el estado de la partida a terminada
+    game.status = GameStatus.FINISHED
+    game.save()
+
+    # Borramos de la sesion la partida, porque ya ha terminado
+    if constants.GAME_SELECTED_SESSION_ID in request.session:
+        del request.session[constants.GAME_SELECTED_SESSION_ID]
+
+    # Devolvemos un página con un mensaje de ganador y el tablero final de la
+    # partida
+    context_dict = {}
+    if winner == 1:
+        context_dict['winner'] = constants.CAT_WINNER
+    if winner == 2:
+        context_dict['winner'] = constants.MOUSE_WINNER
+    context_dict['board'] = board
+    return render(request, "mouse_cat/end_game.html", context_dict)
 
 
 def index(request):
@@ -230,6 +259,12 @@ def show_game_service(request):
         game = Game.objects.filter(id=request.session[
             constants.GAME_SELECTED_SESSION_ID])[0]
 
+        # Compruebo si la partida ha terminado ya, porque el otro jugador haya
+        # ganado, en cuyo caso afirmativo tendré que llamar a la función de
+        # partida finalizada
+        if game.status == GameStatus.FINISHED:
+            return end_game(request, check_winner(game), game)
+
         return create_board(request, game)
     except KeyError:
         return render(request, "mouse_cat/error.html",
@@ -264,6 +299,14 @@ def move_service(request):
                 except:
                     # Añadimos el error del movimiento al formulario
                     form.add_error(None, constants.MSG_ERROR_MOVE)
+
+            # Hacemos una comprobacion de si la partida tiene que finalizar
+            # por si ha ganado el raton o el gato
+            check_end = check_winner(game)
+            if check_end == 1 or check_end == 2:
+                # Devolvemos la página con un mensaje de partida terminada
+                # y con el tablero pintado
+                return end_game(request, check_end, game)
 
             # Generamos de nuevo el tablero, pero se manda un formulario que
             # puede contener el error en el movimiento
@@ -307,3 +350,56 @@ def create_board(request, game, form=None):
         return render(request, 'mouse_cat/game.html',
                       {'game': game, 'board': board,
                        'move_form': MoveForm()})
+
+
+# Funcion que comprueba si hay ganador
+# Retorno:
+# 0 == NO WINNER
+# 1 == CAT_WINNER
+# 2 == MOUSE_WINNER
+def check_winner(game):
+    if game is not None:
+        # Sacamos la posicion de cada gato y raton, con sus coordenadas x e y
+        cat1 = game.cat1
+        cat1x = cat1 // 8 + 1
+
+        cat2 = game.cat2
+        cat2x = cat2 // 8 + 1
+
+        cat3 = game.cat3
+        cat3x = cat3 // 8 + 1
+
+        cat4 = game.cat4
+        cat4x = cat4 // 8 + 1
+
+        mouse = game.mouse
+        mousex = mouse // 8 + 1
+
+        # Primero comprobamos la condicion de victoria del mouse
+        # En cuanto el mouse se encuentre a la misma altura que el último
+        # gato, significa que ya ha ganado (si hace movimientos logicos
+        # claro
+        if (mousex <= cat1x and mousex <= cat2x and mousex <= cat3x and
+                mousex <= cat4x):
+            # EL RATON HA GANADO PORQUE SE ENCUENTRA A LA MISMA ALTURA
+            return 2
+            # Revisar: Finalizar la partida
+
+        if not game.cat_turn:
+            # El otro caso, es que el raton se vea rodeado
+            # Probamos el movimiento a todas las posibles casillas del gato
+            flag = 0
+            for i in range(Game.MIN_CELL, Game.MAX_CELL):
+                try:
+                    if valid_move(game, mouse, i):
+                        # Si tengo un movimiento valido, todavia no he perdido
+                        flag = 1
+                except:
+                    pass
+
+            if flag == 0:
+                # El raton pierde porque no puede hacer ningun movimiento
+                return 1
+
+        # Si llegamos aqui, es porque no hay ganador
+        return 0
