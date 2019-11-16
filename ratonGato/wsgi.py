@@ -1,10 +1,10 @@
 """
-WSGI config for ratonGato project.
+    Configuración WSGI de la aplicación de RatonGato
 
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/2.2/howto/deployment/wsgi/
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
 """
 
 import os

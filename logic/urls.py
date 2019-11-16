@@ -1,3 +1,12 @@
+"""
+    URLs correspondientes a las vistas de la aplicación de RatonGato.
+
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
+"""
+
 from django.conf.urls import url
 from django.urls import path
 

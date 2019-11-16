@@ -1,5 +1,5 @@
 """
-    Modelos de datos utilizados a lo largo de la aplicación.
+    Modelos de datos utilizados a lo largo de la aplicación de RatonGato.
         - Game
         - Move
         - Counter
@@ -19,6 +19,7 @@ from django.db import models
 
 from datamodel import constants
 
+# Posiciones iniciales.
 CAT1POS = 0
 CAT2POS = 2
 CAT3POS = 4
@@ -84,7 +85,7 @@ def valid_move(game, origin, target):
 
         Author
         -------
-            Andrés Mena
+            Eric Morales
     """
 
     # Comprobamos que no podemos ir a un celda donde haya un gato, ni un raton

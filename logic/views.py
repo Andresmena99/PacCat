@@ -1,3 +1,12 @@
+"""
+    Vistas utilizadas a lo largo de la aplicación de RatonGato.
+
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
+"""
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -131,7 +140,7 @@ def index(request):
 
         Author
         -------
-            Andrés Mena
+            Eric Morales
     """
     return render(request, 'mouse_cat/index.html')
 

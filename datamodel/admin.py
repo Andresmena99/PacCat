@@ -1,3 +1,12 @@
+"""
+    Administración de toda la aplicación de RatonGato.
+
+    Author
+    -------
+        Andrés Mena
+        Eric Morales
+"""
+
 from django.contrib import admin
 
 from datamodel.models import Game, Move
