@@ -1,4 +1,5 @@
 import os
+
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
@@ -7,7 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE',
 django.setup()
 
 from django.contrib.auth.models import User
-from datamodel.models import Game, GameStatus, Move
+from datamodel.models import Game, Move
 
 try:
     usuario1 = User.objects.get(id=10)

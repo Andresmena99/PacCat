@@ -1,10 +1,7 @@
 from django import forms
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.contrib.auth.password_validation import validate_password, UserAttributeSimilarityValidator, \
-    CommonPasswordValidator, NumericPasswordValidator
 
-from datamodel.models import UserProfile
+from datamodel.models import UserProfile, Move
 
 
 class UserProfileForm(forms.ModelForm):
@@ -18,7 +15,7 @@ class MoveForm(forms.ModelForm):
     target = forms.IntegerField(initial=0)
 
     class Meta:
-        model = User
+        model = Move
         fields = ('origin', 'target')
 
     def clean(self):
@@ -28,17 +25,11 @@ class MoveForm(forms.ModelForm):
         origin = self.cleaned_data.get('origin')
         target = self.cleaned_data.get('target')
 
-        if origin < 0 or origin > 63:
-            self._errors['origin'] = self.error_class([
-                'La casilla tiene que estar en el rango [0,63'])
-
-        if target > 63 or target < 0:
-            self._errors['target'] = self.error_class([
-                'La casilla tiene que estar en el rango [0,63'])
+        if origin < 0 or origin > 63 or target > 63 or target < 0:
+            self.add_error(None, 'Los campos origin y target tienen que estar en el rango [0,63]')
 
         # devolver los errores en caso de haberlos
         return self.cleaned_data
-
 
 
 class SignupForm(forms.ModelForm):
@@ -59,7 +50,6 @@ class SignupForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
         password2 = self.cleaned_data.get('password2')
 
-
         # REVISAR: HAY QUE USAR ESTO PARA VER SI DOS CONTRASEÑAS SON MUY COMUNES,
         # PERO NO LO HE CONSEGUIDO:
         # https://docs.djangoproject.com/en/1.9/topics/auth/passwords/#module-django.contrib.auth.password_validation
@@ -79,7 +69,7 @@ class SignupForm(forms.ModelForm):
             self._errors['password2'] = self.error_class([
                 'Password and Repeat password are not the same'])
 
-        #REVISAR: Hacer una expresion regular o algo asi para contraseñas muy comunes, porque eso yo no se
+        # REVISAR: Hacer una expresion regular o algo asi para contraseñas muy comunes, porque eso yo no se
         # te lo dejo eric :). De momento imprimo lo de la longitud y lo de que es muy comun porque hay un test
         # (signupser
         if len(password) < 6:
@@ -91,10 +81,12 @@ class SignupForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
-    username = forms.CharField(max_length=32, widget=forms.TextInput(attrs={'placeholder': 'Minimum 8 characters'}),
-                               required=True)
+    username = forms.CharField(max_length=32, required=True)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         model = User
         fields = ('username', 'password')
+
+    def clear_form(self):
+        self.password.clean()

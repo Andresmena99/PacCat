@@ -8,7 +8,6 @@ from django.test import TestCase
 
 from . import tests
 from .models import Counter, Game, GameStatus, Move
-from datamodel import constants
 
 
 class GameModelTests(tests.BaseModelTest):

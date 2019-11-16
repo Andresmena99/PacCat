@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from datamodel.models import UserProfile
 from datamodel.models import Game, Move
+from datamodel.models import UserProfile
 
 
 # Add in this class to customise the Admin Interface

@@ -1,10 +1,9 @@
+from enum import IntEnum
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from enum import IntEnum
-from django.template.defaultfilters import slugify
-import datetime
+
 from datamodel import constants
 
 CAT1POS = 0

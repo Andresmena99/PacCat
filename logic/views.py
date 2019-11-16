@@ -1,30 +1,14 @@
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.http import HttpResponseForbidden, HttpResponseNotFound
-from django.shortcuts import render
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
 
-# from datamodel import constants
-from datamodel.forms import UserForm
-from datamodel.models import Counter, Game, GameStatus, Move
-from logic.forms import SignupForm, MoveForm
 from datamodel import constants
-
-
-def incrementar_counter(request):
-    if "counter" in request.session:
-        request.session["counter"] += 1
-    else:
-        counter_session = 1
-        request.session["counter"] = counter_session
-    # Incrementamos el contador global
-    Counter.objects.inc()
+from datamodel.models import Counter, Game, GameStatus, Move
+from logic.forms import SignupForm, MoveForm, UserForm
 
 
 def anonymous_required(f):
@@ -32,7 +16,7 @@ def anonymous_required(f):
         if request.user.is_authenticated:
             return HttpResponseForbidden(
                 errorHTTP(request,
-                          exception="Action restricted to anonymous users"))
+                          exception=constants.ERROR_RESTRICTED_ANONYMOUS))
         else:
             return f(request)
 
@@ -40,8 +24,7 @@ def anonymous_required(f):
 
 
 def errorHTTP(request, exception=None):
-    context_dict = {}
-    context_dict['msg_error'] = exception
+    context_dict = {'msg_error': exception}
     return render(request, "mouse_cat/error.html", context_dict)
 
 
@@ -51,6 +34,7 @@ def index(request):
 
 @anonymous_required
 def login_service(request):
+    # Si alguien esta intentando iniciar sesion, es metodo post
     if request.method == 'POST':
         form = UserForm(request.POST)
 
@@ -67,12 +51,17 @@ def login_service(request):
 
                 return redirect(reverse('logic:index'))
             else:
-                return HttpResponse("Your mouse_cat account is disabled.")
+                return HttpResponse(constants.EEROR_ACCOUNT_DISABLED)
         else:
-            # Devolvemos el error del formulario
-            form.add_error('username', "Usuario/clave no válidos")
+            # Borramos los errores del formulario en caso de que los hubiera
+            form.errors.pop('username', None)
+
+            # Añadimos el error de autentificacion invalida
+            form.add_error('username', constants.ERROR_CREDENTIALS)
             return render(request, 'mouse_cat/login.html',
                           {'user_form': form})
+
+    # Metodo get implica que alguien está intentando ver la pagina
     else:
         return render(request, 'mouse_cat/login.html',
                       {'user_form': UserForm()})
@@ -80,54 +69,73 @@ def login_service(request):
 
 @login_required
 def logout_service(request):
+    # Obtenemos que usuario estas conectado, y procedemos a cerrar sesion
     user = request.user
     logout(request)
+
+    # Eliminamos la informacion de la sesion
     for key in request.session.keys():
         del request.session[key]
 
     return render(request, 'mouse_cat/logout.html', {'user': user})
-    return redirect(reverse('logic:index'))
 
 
 @anonymous_required
 def signup_service(request):
-    # POST
+    # Si el metodo es post, significa que nos estan mandando un formulario con
+    # informacion de inicio de sesion
     if request.method == 'POST':
         formulario = SignupForm(request.POST)
 
-        # Esto llamara a la funcion clean para hacer la comprobacion
+        # Esto llamara a la funcion clean para hacer la comprobacion del
+        # formulario
         if formulario.is_valid():
             new_user = formulario.save()
 
-            # Sacamos el valor de la contraseña, y se lo asignamos al usuario antes de guardar
+            # Sacamos el valor de la contraseña, y se lo asignamos al usuario
+            # antes de guardar
             new_user.set_password(formulario.cleaned_data['password'])
             new_user.save()
 
             # Procedemos a iniciar sesion del usuario en la pagina
-            new_user = authenticate(username=formulario.cleaned_data['username'],
-                                    password=formulario.cleaned_data['password'])
+            new_user = authenticate(username=
+                                    formulario.cleaned_data['username'],
+                                    password=
+                                    formulario.cleaned_data['password'])
             login(request, new_user)
+
+            # Devolvemos una pagina que indica que se ha registrado
+            # correctamente
+            return render(request,
+                          'mouse_cat/signup.html', {'user_form': None})
+
         else:
             # Formulario invalido, devolvemos los errores
             return render(request,
                           'mouse_cat/signup.html', {'user_form': formulario})
 
-    # Si el metodo es get, le damos un formulario para rellenarlo
+    # Si el metodo es get, es la primera vez que accede a la página, por lo
+    # que le damos un formulario nuevo para que lo rellene
     else:
-        incrementar_counter(request)
         return render(request,
                       'mouse_cat/signup.html', {'user_form': SignupForm()})
 
-    return render(request,
-                  'mouse_cat/signup.html', {'user_form': None})
-
 
 def counter_service(request):
-    incrementar_counter(request)
-    counter_global = Counter.objects.get_current_value()
+    # Si el contador ya esta definido en la sesion, lo incrementamos en 1
+    if "counter" in request.session:
+        request.session["counter"] += 1
+
+    # En caso de no tener todavia contador en la sesion, lo inicializamos a 1
+    else:
+        counter_session = 1
+        request.session["counter"] = counter_session
+
+    # Incrementamos el contador global
+    Counter.objects.inc()
 
     context_dict = {'counter_session': request.session["counter"],
-                    'counter_global': counter_global}
+                    'counter_global': Counter.objects.get_current_value()}
     return render(request, 'mouse_cat/counter.html', context=context_dict)
 
 
@@ -143,122 +151,140 @@ def create_game_service(request):
 def join_game_service(request):
     # Tenemos que meter al usuario en la partida con id mas alto
     # Entre todas las partidas, miro las que solo tienen un jugador
-    un_solo_jugador = []
-    games = Game.objects.all()
-    for partida in games:
-        if partida.mouse_user is None:
-            un_solo_jugador.append(partida)
+    un_solo_jugador = Game.objects.filter(mouse_user=None)
 
     # Si no hay partidas con un solo jugador
     if len(un_solo_jugador) <= 0:
         return render(request, 'mouse_cat/join_game.html',
-                      {'msg_error': "There is no available games|No hay juegos disponibles"})
+                      {'msg_error': constants.MSG_ERROR_NO_AVAILABLE_GAMES})
 
+    # Ordeno las partidas por id de forma descendente para hacer una busqueda
+    # mas eficaz
     else:
-        id_max = -999
-        for partida in un_solo_jugador:
-            # REVISAR: Un jugador no puede jugar contra si mismo? O si?
-            if partida.id > id_max and partida.cat_user != request.user:
-                id_max = partida.id
+        for partida in un_solo_jugador.order_by('-id'):
+            # Me unire a la partida si yo no soy el propio gato, es decir,
+            # no voy a jugar contra mi mismo
+            if partida.cat_user != request.user:
+                request.session[constants.GAME_SELECTED_SESSION_ID] = \
+                    partida.id
+                partida.mouse_user = request.user
+                partida.save()
+                return render(request, 'mouse_cat/join_game.html',
+                              {'game': partida})
 
-        if id_max == -999:
-            # No puedo jugar contra mi mismo
-            return render(request, 'mouse_cat/join_game.html',
-                          {
-                              'msg_error': "There is no available games|No hay juegos disponibles"})
+        return render(request, 'mouse_cat/join_game.html',
+                      {
+                          'msg_error': constants.MSG_ERROR_NO_AVAILABLE_GAMES})
 
-        else:
-            # Cojo la partida a la que quiero unir al jugador
-            partida = Game.objects.get(id=id_max)
-
-            request.session[constants.GAME_SELECTED_SESSION_ID] = id_max
-
-            # Comienza la partida
-            partida.mouse_user = request.user
-            partida.save()
-
-            return render(request, 'mouse_cat/join_game.html',
-                          {'game': partida})
 
 @login_required
 def select_game_service(request, id=-1):
     if request.method == 'GET' and id == -1:
-        # Muestro todos los juegos en los que estoy participando, ya sea como raton o gato
-        # Tengo que añadir un campo id a cada partida, para luego poder hacer bien el template
-        mis_juegos_cat = []
-        mis_juegos_mouse = []
+        # Tengo que añadir un campo id a cada partida, para luego poder hacer
+        # bien el template
 
-        games = Game.objects.all()
-        for partida in games:
-            if partida.status == GameStatus.ACTIVE:
-                if partida.mouse_user == request.user:
-                    mis_juegos_mouse.append(partida)
+        # Filtro los juegos que estan activos, en los que el usuario que
+        # hace la solicitud es el gato o el raton
+        mis_juegos_cat = Game.objects.filter(status=GameStatus.ACTIVE,
+                                             cat_user=request.user)
+        mis_juegos_mouse = Game.objects.filter(status=GameStatus.ACTIVE,
+                                               mouse_user=request.user)
 
-                elif partida.cat_user == request.user:
-                    mis_juegos_cat.append(partida)
-
-        context_dict = {}
-        context_dict['as_cat'] = mis_juegos_cat
-        context_dict['as_mouse'] = mis_juegos_mouse
+        context_dict = {'as_cat': mis_juegos_cat, 'as_mouse': mis_juegos_mouse}
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
-    # Parte de POST
+    # En este caso, significa que quiero jugar la partida
     if id != -1:
+        # Confirmo que no me esten dando un id que no es valido. En caso de
+        # ser válido, intento devuelver el estado de la partida llamando a
+        # show game service
         game = Game.objects.filter(id=id)
         if len(game) > 0:
             game = game[0]
             if game.status != GameStatus.ACTIVE:
-                return HttpResponseNotFound("El juego seleccionado no esta disponible")
+                # Error porque el juego seleccionado no esta en estado activo
+                return HttpResponseNotFound(
+                    constants.ERROR_SELECTED_GAME_NOT_AVAILABLE)
+
             if game.cat_user != request.user and game.mouse_user != request.user:
-                return HttpResponseNotFound("Este no es tu juego")
+                # Error porque el jugador que solicita el juego no es ni el
+                # gato ni el raton
+                return HttpResponseNotFound(
+                    constants.ERROR_SELECTED_GAME_NOT_YOURS)
 
             request.session[constants.GAME_SELECTED_SESSION_ID] = id
             return show_game_service(request)
+
+        # Error porque no se ha encontrado un juego con el id solicitado
         else:
-            return HttpResponseNotFound("El juego seleccionado no existe")
+            return HttpResponseNotFound(
+                constants.ERROR_SELECTED_GAME_NOT_EXISTS)
 
 
 @login_required
 def show_game_service(request):
+    # Muestra el estado de la partida que se encuentra en la sesion. En caso
+    # de que no se haya ninguna partida en la sesion, devuelve un mensaje de
+    # error
     try:
-        game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_SESSION_ID])[0]
+        game = Game.objects.filter(id=request.session[
+            constants.GAME_SELECTED_SESSION_ID])[0]
 
-        return createBoard(request, game)
+        return create_board(request, game)
     except KeyError:
-        return render(request, "mouse_cat/error.html", {'msg_error': "No game selected"})
+        return render(request, "mouse_cat/error.html",
+                      {'msg_error': "No game selected"})
 
 
 @login_required
 def move_service(request):
     if request.method == 'POST':
+        # Nos mandan un formulario que contiene el movimento que se quiere
+        # realizar.
         try:
-            game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_SESSION_ID])[0]
+            # Sacamos la partida que se esta jugando de la sesión
+            game = Game.objects.filter(id=request.session[
+                constants.GAME_SELECTED_SESSION_ID])[0]
             form = MoveForm(request.POST)
             if form.is_valid():
-                if game.cat_turn:
-                    Move.objects.create(
-                        game=game, player=game.cat_user,
-                        origin=form.cleaned_data['origin'],
-                        target=form.cleaned_data['target'])
+                # Intentamos hacer el movimiento. En caso de que nos de una
+                # excepcion, significa que el moviemiento no estaba permitido
+                try:
+                    if game.cat_turn:
+                        Move.objects.create(
+                            game=game, player=game.cat_user,
+                            origin=form.cleaned_data['origin'],
+                            target=form.cleaned_data['target'])
 
-                else:
-                    Move.objects.create(
-                        game=game, player=game.mouse_user,
-                        origin=form.cleaned_data['origin'],
-                        target=form.cleaned_data['target'])
+                    else:
+                        Move.objects.create(
+                            game=game, player=game.mouse_user,
+                            origin=form.cleaned_data['origin'],
+                            target=form.cleaned_data['target'])
+                except:
+                    # Añadimos el error del movimiento al formulario
+                    form.add_error(None, constants.MSG_ERROR_MOVE)
 
-            return createBoard(request, game)
+            # Generamos de nuevo el tablero, pero se manda un formulario que
+            # puede contener el error en el movimiento
+            return create_board(request, game, form)
 
+        # Si intentamos sacar un id de un juego que no existe, nos dará
+        # este error
         except KeyError:
-            return HttpResponseNotFound("El juego seleccionado no existe")
+            return HttpResponseNotFound(
+                constants.ERROR_SELECTED_GAME_NOT_EXISTS)
 
-    # GET: Tiene que dar error
+    # GET: Tiene que dar error. No se puede llamar a este servicio en modo get
     else:
-        return HttpResponseNotFound("Invalid get on service move")
+        return HttpResponseNotFound(constants.ERROR_INVALID_GET)
 
 
-def createBoard(request, game):
+def create_board(request, game, form=None):
+    # Creamos el array que representa el tablero
     if game is not None:
+        # Primero colocamos todas las casillas a 0, y luego donde estén los
+        # gatos lo ponemos a 1, y donde esté el raton a -1
         board = [0] * 64
 
         board[game.cat1] = 1
@@ -268,6 +294,16 @@ def createBoard(request, game):
 
         board[game.mouse] = -1
 
+        # Si nos han mandado un formulario, significa que puede tener errores,
+        # asi que devolvemos el tablero con el formulario correspondiente
+        if form is not None:
+            return render(request, 'mouse_cat/game.html',
+                          {'game': game, 'board': board,
+                           'move_form': form})
+
+        # Si no nos han dado formulario, significa que no se ha intentado hacer
+        # todavia una solicitud de movimiento, por lo que creamos nosotros el
+        # formulario vacio
         return render(request, 'mouse_cat/game.html',
                       {'game': game, 'board': board,
                        'move_form': MoveForm()})

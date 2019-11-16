@@ -17,7 +17,6 @@ from django.urls import reverse
 from datamodel import constants
 from datamodel.models import Counter, Game, GameStatus, Move
 from datamodel.tests import BaseModelTest
-
 from . import forms
 
 # Tests classes:
