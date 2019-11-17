@@ -204,8 +204,6 @@ class ServiceBaseTest(TransactionTestCase):
 
     def validate_response(self, service, response):
         definition = SERVICE_DEF[service]
-        # print(definition["pattern"])
-        # print(self.decode(response.content))
         self.assertRegex(self.decode(response.content), definition["title"])
         m = re.search(definition["pattern"], self.decode(response.content))
         self.assertTrue(m)

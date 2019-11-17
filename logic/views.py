@@ -17,7 +17,7 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from datamodel import constants
-from datamodel.models import Counter, Game, GameStatus, Move, valid_move, check_winner
+from datamodel.models import Counter, Game, GameStatus, Move, check_winner
 from logic.forms import SignupForm, MoveForm, UserForm
 
 
@@ -106,10 +106,6 @@ def end_game(request, winner, game):
     board[game.cat3] = 1
     board[game.cat4] = 1
     board[game.mouse] = -1
-
-    # Cambiamos el estado de la partida a terminada
-    game.status = GameStatus.FINISHED
-    game.save()
 
     # Borramos de la sesion la partida, porque ya ha terminado
     if constants.GAME_SELECTED_SESSION_ID in request.session:
@@ -553,11 +549,17 @@ def move_service(request):
 
             # Hacemos una comprobacion de si la partida tiene que finalizar
             # por si ha ganado el raton o el gato
-            check_end = check_winner(game)
-            if check_end == 1 or check_end == 2:
+
+            # REVISAR:
+            # check_end = check_winner(game)
+            # if check_end == 1 or check_end == 2:
                 # Devolvemos la página con un mensaje de partida terminada
                 # y con el tablero pintado
-                return end_game(request, check_end, game)
+            # Si la partida ha terminado, significa que tenemos que mostrar
+            # el tablero una ultima vez y devolver la pagina con el mensaje
+            # de partida terminada
+            if game.status == GameStatus.FINISHED:
+                return end_game(request, check_winner(game), game)
 
             # Generamos de nuevo el tablero, pero se manda un formulario que
             # puede contener el error en el movimiento

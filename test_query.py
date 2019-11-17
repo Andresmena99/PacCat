@@ -36,7 +36,8 @@ if len(un_solo_jugador) > 0:
     id_min = un_solo_jugador.order_by('id')[0:1].get().id
 
 else:
-    print("No hay partidas con un solo jugador, por lo que no se puede unir al jugador con id 11")
+    print("No hay partidas con un solo jugador, por lo que no se puede unir "
+          "al jugador con id 11")
     exit(0)
 
 # Sacamos la partida con el id mínimo
@@ -48,7 +49,8 @@ partida.mouse_user = usuario2
 # Al hacer save, se pone en status active
 partida.save()
 
-print("\n\nNos unimos a la partida con menor id, y realizamos los movimientos:\n")
+print("\n\nNos unimos a la partida con menor id, y realizamos los "
+      "movimientos:\n")
 Move.objects.create(
     game=partida, player=partida.cat_user, origin=2, target=11)
 

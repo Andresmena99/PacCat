@@ -123,6 +123,7 @@ def valid_move(game, origin, target):
     # Si el movimiento es valido, y llego hasta aqui, devuelvo true
     return True
 
+
 def check_winner(game):
     """
         Funcion que comprueba si hay ganador.
@@ -297,6 +298,9 @@ class Game(models.Model):
                 Andrés Mena
         """
 
+        # Antes de guardar, comprobamos si la partida ya ha terminado
+        if check_winner(self) != 0:
+            self.status = GameStatus.FINISHED
         validate_position(self.cat1)
         validate_position(self.cat2)
         validate_position(self.cat3)
