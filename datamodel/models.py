@@ -687,4 +687,3 @@ class Counter(SingletonModel):
         """
 
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
-
