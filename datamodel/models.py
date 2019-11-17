@@ -688,39 +688,3 @@ class Counter(SingletonModel):
 
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
-
-class UserProfile(models.Model):
-    """
-        Modelo que almacena toda la información relativa al usuario
-
-        Attributes
-        ----------
-        user : OneToOneField
-
-        Methods
-        -------
-        __str__(self)
-            Sobreescribimos el método str.
-    """
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        """
-            Devuelve una cadena con toda la información necesaria de un objeto
-            de esta clase.
-
-            Parameters
-            ----------
-            void : void
-
-            Returns
-            -------
-                string : cadena formateada
-
-            Author
-            -------
-                Eric Morales
-        """
-
-        return self.user.username
