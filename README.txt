@@ -8,7 +8,7 @@ Autores:
 Se entrega todo lo necesario para la ejecución de la aplicación de ratón gato:
     - Carpeta ratonGato con las aplicaciones logic y datamodel completas.
     - Capturas de pantalla con las ejecuciones los tests y su coverage:
-        + Se incluyen cuatro capturas, dos en local y dos en heroku, son dos
+        + Se incluyen cuatro archivos txt, dos en local y dos en heroku, son dos
         para poder apreciar la mejora de coverage que conseguimos añadiendo
         nuestros tests_extra.py, que suben el coverage de 92% a 96%.
 
@@ -18,7 +18,7 @@ Se entrega todo lo necesario para la ejecución de la aplicación de ratón gato
                  test logic.tests_services logic.tests_function datamodel.tests_models test_query"
             - Todos los tests (coverage 96%):
                 "coverage run --omit="*/test*" --source=logic,datamodel ./manage.py
-                 test logic.tests_services logic.tests_function datamodel.tests_models test_query tests_extra"
+                 test logic.tests_services logic.tests_function datamodel.tests_models test_query tests_additional"
     - Nuestros tests propios.
 
 Aclaraciones:
