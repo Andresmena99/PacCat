@@ -1,1 +1,1 @@
-web: gunicorn Practica_2_PSI.wsgi --log-file -
+web: gunicorn ratonGato.wsgi --log-file -

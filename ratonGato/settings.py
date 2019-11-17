@@ -26,7 +26,7 @@ SECRET_KEY = '@stx*f85ct$3_)btvqnij#a5%2@3ykp)t_e3f92hqg&dyt7s7*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['secure-cove-59003.herokuapp.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['infinite-tor-36623.herokuapp.com', 'localhost', '127.0.0.1']
 
 # Application definition
 

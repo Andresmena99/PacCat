@@ -50,13 +50,15 @@ def validate_position(value):
         -------
             Eric Morales
     """
+    if value < Game.MIN_CELL or value > Game.MAX_CELL:
+        raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
     if (value // 8) % 2 == 0:
         if value % 2 != 0:
-            raise ValidationError(constants.MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
     else:
         if value % 2 == 0:
-            raise ValidationError(constants.MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
 
 
 def valid_move(game, origin, target):
