@@ -1,5 +1,9 @@
 """
-@author: Andrés Mena
+    Tests que comprueban la funcionalidad del sistema de victorias.
+
+    Author
+    -------
+        Andrés Mena
 """
 import re
 from django.urls import reverse
