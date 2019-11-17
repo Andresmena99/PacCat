@@ -7,18 +7,11 @@ Autores:
 
 Se entrega todo lo necesario para la ejecución de la aplicación de ratón gato:
     - Carpeta ratonGato con las aplicaciones logic y datamodel completas.
+    - Archivo coverage.txt en el que se detalla la ejecucion del comando.
     - Capturas de pantalla con las ejecuciones los tests y su coverage:
-        + Se incluyen cuatro archivos txt, dos en local y dos en heroku, son dos
+        + Se incluyen cuatro capturas, dos en local y dos en heroku, son dos
         para poder apreciar la mejora de coverage que conseguimos añadiendo
         nuestros tests_extra.py, que suben el coverage de 92% a 96%.
-
-        + El comando para ejecutar el coverage es el siguiente:
-            - Tests profesores (coverage 92%):
-                "coverage run --omit="*/test*" --source=logic,datamodel ./manage.py
-                 test logic.tests_services logic.tests_function datamodel.tests_models test_query"
-            - Todos los tests (coverage 96%):
-                "coverage run --omit="*/test*" --source=logic,datamodel ./manage.py
-                 test logic.tests_services logic.tests_function datamodel.tests_models test_query tests_additional"
     - Nuestros tests propios.
 
 Aclaraciones:
@@ -31,26 +24,28 @@ Aclaraciones:
       apartado del modelo de datos, y cuando se guarda la partida comprobamos
       si hay un ganador. El algoritmo para determinarlo todavía no esta
       depurado, realizamos las siguientes comprobaciones:
-       - Si el ratón no tiene ninguna casilla del tablero donde moverse,
-         significa que ha perdido, porque ha sido rodeado
-       - Si el ratón se encuentra en la misma fila que el ultimo gato, significa
-         que ha ganado, ya que, siempre que realice movimientos lógicos, sin
-         volver hacia atrás, no puede ser encerrado por los gatos
+        + Si el ratón no tiene ninguna casilla del tablero donde moverse,
+          significa que ha perdido, porque ha sido rodeado
+        + Si el ratón se encuentra en la misma fila que el ultimo gato, significa
+          que ha ganado, ya que, siempre que realice movimientos lógicos, sin
+          volver hacia atrás, no puede ser encerrado por los gatos
 
     - Todo el código se encuentra documentado siguiendo los criterios usados
     en numpy.
-    Fuente:https://numpydoc.readthedocs.io/en/latest/format.html#class-docstring
+    Fuente: https://numpydoc.readthedocs.io/en/latest/format.html#class-docstring
 
     - La aplicación se encuentra desplegada en heroku en el siguiente enlace:
     Link: https://infinite-tor-36623.herokuapp.com/
 
 Test adicional no trivial:
     - Aprovechando la funcionalidad añadida de finalización de partidas, hemos
-    creado una nueva clase de tests, llamada CheckGameWinner (DECIR COMO SE LLAMA Y DONDE LO HEMOS DEJADO).
+    creado una nueva clase de tests, llamada CheckGameWinner, que se encuentra
+    en la carpeta raiz del proyecto
 
     En esta clase, tenemos dos tests, en los que comprobamos que el juego
     finaliza correctamente. Estos test se encuentran documentados en el fichero,
     pero a modo de resumen realizan lo siguiente:
+
     - Test1: Secuencia de movimientos que hacen que el raton pierda,
       porque queda encerrado. Creamos la partida, la metemos en la sesion, y
       ejecutamos los movimientos. En cada movimiento comprobamos que no se haya
