@@ -17,7 +17,7 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from datamodel import constants
-from datamodel.models import Counter, Game, GameStatus, Move, valid_move
+from datamodel.models import Counter, Game, GameStatus, Move, valid_move, check_winner
 from logic.forms import SignupForm, MoveForm, UserForm
 
 
@@ -75,7 +75,7 @@ def errorHTTP(request, exception=None):
 
 def end_game(request, winner, game):
     """
-        Funcion que genera la pagina html que muestra el resultado de una
+        Funcion que genera la pagina html que muestra el resultado final de una
         partida.
 
         Parameters
@@ -625,72 +625,3 @@ def create_board(request, game, form=None):
         return render(request, 'mouse_cat/game.html',
                       {'game': game, 'board': board,
                        'move_form': MoveForm()})
-
-
-def check_winner(game):
-    """
-        Funcion que comprueba si hay ganador.
-
-        Parameters
-        ----------
-        game : Game
-            Partida correspondiente
-
-        Returns
-        -------
-        int : función que indica cual ha sido el ganador de una partida,
-              los posibles resultados son los siguientes:
-                - 0 == NO WINNER
-                - 1 == CAT_WINNER
-                - 2 == MOUSE_WINNER
-
-        Author
-        -------
-            Andrés Mena
-    """
-
-    if game is not None:
-        # Sacamos la posicion de cada gato y raton, con sus coordenadas x e y
-        cat1 = game.cat1
-        cat1x = cat1 // 8 + 1
-
-        cat2 = game.cat2
-        cat2x = cat2 // 8 + 1
-
-        cat3 = game.cat3
-        cat3x = cat3 // 8 + 1
-
-        cat4 = game.cat4
-        cat4x = cat4 // 8 + 1
-
-        mouse = game.mouse
-        mousex = mouse // 8 + 1
-
-        # Primero comprobamos la condicion de victoria del mouse
-        # En cuanto el mouse se encuentre a la misma altura que el último
-        # gato, significa que ya ha ganado (si hace movimientos logicos
-        # claro
-        if (mousex <= cat1x and mousex <= cat2x and mousex <= cat3x and
-                mousex <= cat4x):
-            # EL RATON HA GANADO PORQUE SE ENCUENTRA A LA MISMA ALTURA
-            return 2
-            # Revisar: Finalizar la partida
-
-        if not game.cat_turn:
-            # El otro caso, es que el raton se vea rodeado
-            # Probamos el movimiento a todas las posibles casillas del gato
-            flag = 0
-            for i in range(Game.MIN_CELL, Game.MAX_CELL):
-                try:
-                    if valid_move(game, mouse, i):
-                        # Si tengo un movimiento valido, todavia no he perdido
-                        flag = 1
-                except ValidationError:
-                    pass
-
-            if flag == 0:
-                # El raton pierde porque no puede hacer ningun movimiento
-                return 1
-
-        # Si llegamos aqui, es porque no hay ganador
-        return 0

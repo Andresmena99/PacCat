@@ -123,6 +123,93 @@ def valid_move(game, origin, target):
     # Si el movimiento es valido, y llego hasta aqui, devuelvo true
     return True
 
+def check_winner(game):
+    """
+        Funcion que comprueba si hay ganador.
+
+        Parameters
+        ----------
+        game : Game
+            Partida correspondiente
+
+        Returns
+        -------
+        int : función que indica cual ha sido el ganador de una partida,
+              los posibles resultados son los siguientes:
+                - 0 == NO WINNER
+                - 1 == CAT_WINNER
+                - 2 == MOUSE_WINNER
+
+        Author
+        -------
+            Andrés Mena
+    """
+
+    if game is not None:
+        # Sacamos la posicion de cada gato y raton, con sus coordenadas x e y
+        cat1 = game.cat1
+        cat1x = cat1 // 8 + 1
+
+        cat2 = game.cat2
+        cat2x = cat2 // 8 + 1
+
+        cat3 = game.cat3
+        cat3x = cat3 // 8 + 1
+
+        cat4 = game.cat4
+        cat4x = cat4 // 8 + 1
+
+        mouse = game.mouse
+        mousex = mouse // 8 + 1
+
+        # Primero comprobamos la condicion de victoria del mouse
+        # En cuanto el mouse se encuentre a la misma altura que el último
+        # gato, significa que ya ha ganado (si hace movimientos logicos
+        # claro
+        if (mousex <= cat1x and mousex <= cat2x and mousex <= cat3x and
+                mousex <= cat4x):
+            # EL RATON HA GANADO PORQUE SE ENCUENTRA A LA MISMA ALTURA
+            return 2
+
+        if not game.cat_turn:
+            # El otro caso, es que el raton se vea rodeado
+            # Probamos el movimiento a todas las posibles casillas del gato
+            flag = 0
+            for i in range(Game.MIN_CELL, Game.MAX_CELL):
+                try:
+                    if valid_move(game, mouse, i):
+                        # Si tengo un movimiento valido, todavia no he perdido
+                        flag = 1
+                except ValidationError:
+                    pass
+
+            if flag == 0:
+                # El raton pierde porque no puede hacer ningun movimiento
+                return 1
+
+        # Si llegamos aqui, es porque no hay ganador
+        return 0
+
+
+def valid_game_status(value):
+    """
+        Funcion que nos especifica el rango válido de estados que puede tener
+        un juego. Relacion directa con GameStatus
+
+        Parameters
+        ----------
+        value : int
+            Entero que identifica el tipo de estado que se esta intentando
+            crear
+
+        Raises
+        -------
+        ValidationError
+            Si el tipo de estado no es valido
+    """
+    if not 0 <= value <= 2:
+        raise ValidationError(constants.MSG_ERROR_GAMESTATUS)
+
 
 class GameStatus(IntEnum):
     """
@@ -134,9 +221,13 @@ class GameStatus(IntEnum):
     ACTIVE = 1
     FINISHED = 2
 
-
-GameStatus_opts = [(GameStatus.CREATED, 0), (GameStatus.ACTIVE, 1),
-                   (GameStatus.FINISHED, 2)]
+    @classmethod
+    def get_values(cls):
+        return (
+            (cls.CREATED, 'Created'),
+            (cls.ACTIVE, 'Active'),
+            (cls.FINISHED, 'Finished')
+        )
 
 
 class Game(models.Model):
@@ -153,6 +244,7 @@ class Game(models.Model):
         cat4 : IntegerField
         mouse : IntegerField
         cat_turn : BooleanField
+        status : IntegerField
 
         Methods
         -------
@@ -183,9 +275,7 @@ class Game(models.Model):
                                 validators=[validate_position])
     cat_turn = models.BooleanField(default=True, blank=False, null=False)
 
-    # REVISAR comentar en la memoria
-    status = models.IntegerField(choices=GameStatus_opts,
-                                 default=GameStatus.CREATED)
+    status = models.IntegerField(default=0, validators=[valid_game_status])
 
     def save(self, *args, **kwargs):
         """
@@ -593,16 +683,3 @@ class Counter(SingletonModel):
         """
 
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
-
-
-# REVISAR creo que hay que borrar esto
-class UserProfile(models.Model):
-    # This line is required. Links UserProfile to a User model instance.
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    # The additional attributes we wish to include.
-    website = models.URLField(blank=True)
-    picture = models.ImageField(upload_to='profile_images', blank=True)
-
-    def __str__(self):
-        return self.user.username
