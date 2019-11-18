@@ -1,0 +1,19 @@
+{% extends "mouse_cat/base.html" %}
+
+{% block content %}
+<div id="content">
+    {% if finished %}
+    <h1>Select which game you want to reproduce</h1>
+    <p>
+        <ul>
+        {% for game in finished %}
+            <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
+        {% endfor %}
+        </ul>
+    </p>
+    {% else %}
+        <h1>No games to reproduce</h1>
+    {% endif %}
+    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+</div>
+{% endblock content %}

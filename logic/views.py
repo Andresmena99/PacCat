@@ -553,8 +553,8 @@ def move_service(request):
             # REVISAR:
             # check_end = check_winner(game)
             # if check_end == 1 or check_end == 2:
-                # Devolvemos la página con un mensaje de partida terminada
-                # y con el tablero pintado
+            # Devolvemos la página con un mensaje de partida terminada
+            # y con el tablero pintado
             # Si la partida ha terminado, significa que tenemos que mostrar
             # el tablero una ultima vez y devolver la pagina con el mensaje
             # de partida terminada
@@ -574,6 +574,22 @@ def move_service(request):
     # GET: Tiene que dar error. No se puede llamar a este servicio en modo get
     else:
         return HttpResponseNotFound(constants.ERROR_INVALID_GET)
+
+
+@login_required
+def finished_games(request):
+    """
+        REVISAR: COMENTAR
+    """
+
+    # Tenemos que meter al usuario en la partida con id mas alto
+    # Entre todas las partidas, miro las que solo tienen un jugador
+    partidas_finalizadas = []
+    partidas_finalizadas = Game.objects.filter(status=GameStatus.FINISHED)
+
+    print(partidas_finalizadas)
+
+    return render(request, 'mouse_cat/finished_games.html', {'finished': partidas_finalizadas})
 
 
 def create_board(request, game, form=None):

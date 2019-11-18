@@ -28,4 +28,6 @@ urlpatterns = [
     url(r'^select_game/', views.select_game_service, name='select_game'),
     path('play/', views.show_game_service, name='show_game'),
     path('move/', views.move_service, name='move'),
+
+    url(r'^finished_games/', views.finished_games, name='finished_games'),
 ]

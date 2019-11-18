@@ -88,12 +88,6 @@ def valid_move(game, origin, target):
         -------
             Eric Morales
     """
-
-    # Comprobamos que no podemos ir a un celda donde haya un gato, ni un raton
-    if game.mouse == target or game.cat1 == target or game.cat2 == target \
-            or game.cat3 == target or game.cat4 == target:
-        raise ValidationError(constants.MSG_ERROR_MOVE)
-
     x_ori = origin // 8 + 1
     y_ori = origin % 8 + 1
 
@@ -147,48 +141,14 @@ def check_winner(game):
     """
 
     if game is not None:
-        # Sacamos la posicion de cada gato y raton, con sus coordenadas x e y
-        cat1 = game.cat1
-        cat1x = cat1 // 8 + 1
-
-        cat2 = game.cat2
-        cat2x = cat2 // 8 + 1
-
-        cat3 = game.cat3
-        cat3x = cat3 // 8 + 1
-
-        cat4 = game.cat4
-        cat4x = cat4 // 8 + 1
-
-        mouse = game.mouse
-        mousex = mouse // 8 + 1
-
-        # Primero comprobamos la condicion de victoria del mouse
-        # En cuanto el mouse se encuentre a la misma altura que el último
-        # gato, significa que ya ha ganado (si hace movimientos logicos
-        # claro
-        if (mousex <= cat1x and mousex <= cat2x and mousex <= cat3x and
-                mousex <= cat4x):
-            # EL RATON HA GANADO PORQUE SE ENCUENTRA A LA MISMA ALTURA
+        # Compruebo si el gato ha llegado al otro extremo
+        if game.mouse_user in [0, 2, 4, 6]:
             return 2
 
-        if not game.cat_turn:
-            # El otro caso, es que el raton se vea rodeado
-            # Probamos el movimiento a todas las posibles casillas del gato
-            flag = 0
-            for i in range(Game.MIN_CELL, Game.MAX_CELL):
-                try:
-                    if valid_move(game, mouse, i):
-                        # Si tengo un movimiento valido, todavia no he perdido
-                        flag = 1
-                except ValidationError:
-                    pass
+        if game.mouse in [game.cat1, game.cat2, game.cat3, game.cat4]:
+            return 1
 
-            if flag == 0:
-                # El raton pierde porque no puede hacer ningun movimiento
-                return 1
-
-        # Si llegamos aqui, es porque no hay ganador
+        # Si no hay ganador
         return 0
 
 
