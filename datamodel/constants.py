@@ -27,3 +27,6 @@ GAME_SELECTED_SESSION_ID = 'sesion_id'
 ERROR_INVALID_GET = "Tried accesing a page with ilegal get method"
 MOUSE_WINNER = "El raton ha ganado la partida"
 CAT_WINNER = "El gato ha ganado la partida"
+ERROR_NOT_ALLOWED_TO_REPRODUCE = "No puedes reproducir esta partida, porque " \
+                                 "no eras uno de sus participantes"
+ERROR_NOT_FINISHED_YET = "La partida no ha finalizado todavia"

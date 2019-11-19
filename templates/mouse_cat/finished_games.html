@@ -7,7 +7,7 @@
     <p>
         <ul>
         {% for game in finished %}
-            <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
+            <li> <a href="{% url 'reproduce_game_service' game.id %}">{{ game }}</a></li>
         {% endfor %}
         </ul>
     </p>

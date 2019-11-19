@@ -19,6 +19,7 @@ from django.urls import reverse
 from datamodel import constants
 from datamodel.models import Counter, Game, GameStatus, Move, check_winner
 from logic.forms import SignupForm, MoveForm, UserForm
+from itertools import chain
 
 
 def anonymous_required(f):
@@ -100,12 +101,7 @@ def end_game(request, winner, game):
 
     # La partida ha terminado. Imprimiremos una ultima vez el
     # tablero
-    board = [0] * 64
-    board[game.cat1] = 1
-    board[game.cat2] = 1
-    board[game.cat3] = 1
-    board[game.cat4] = 1
-    board[game.mouse] = -1
+    board = create_board_from_game(game)
 
     # Borramos de la sesion la partida, porque ya ha terminado
     if constants.GAME_SELECTED_SESSION_ID in request.session:
@@ -114,10 +110,23 @@ def end_game(request, winner, game):
     # Devolvemos un página con un mensaje de ganador y el tablero final de la
     # partida
     context_dict = {}
+
+    # Felicitamos al usuario que ha ganado
     if winner == 1:
-        context_dict['winner'] = constants.CAT_WINNER
+        if request.user == game.cat_user:
+            msg = constants.CAT_WINNER + ". Enhorabuena " + str(request.user)
+            context_dict['winner'] = msg
+        else:
+            msg = constants.CAT_WINNER + ". Sigue practicando " + str(request.user)
+            context_dict['winner'] = msg
     if winner == 2:
-        context_dict['winner'] = constants.MOUSE_WINNER
+        if request.user == game.mouse_user:
+            msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(request.user)
+            context_dict['winner'] = msg
+        else:
+            msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(request.user)
+            context_dict['winner'] = msg
+
     context_dict['board'] = board
     return render(request, "mouse_cat/end_game.html", context_dict)
 
@@ -584,12 +593,67 @@ def finished_games(request):
 
     # Tenemos que meter al usuario en la partida con id mas alto
     # Entre todas las partidas, miro las que solo tienen un jugador
-    partidas_finalizadas = []
-    partidas_finalizadas = Game.objects.filter(status=GameStatus.FINISHED)
+    finalizadas_raton = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user)
+    finalizadas_gato = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user)
 
-    print(partidas_finalizadas)
+    partidas_finalizadas = list(chain(finalizadas_raton, finalizadas_gato))
+    if len(partidas_finalizadas) > 0:
+        return render(request, 'mouse_cat/finished_games.html', {'finished': partidas_finalizadas})
 
-    return render(request, 'mouse_cat/finished_games.html', {'finished': partidas_finalizadas})
+    return render(request, 'mouse_cat/finished_games.html')
+
+
+@login_required
+def reproduce_game_service(request, game_id):
+    """PARAMETROS DE ENTRADA:
+        game_id: Partida de la que se está mostrando el servicio
+    """
+    game = Game.objects.filter(id=game_id)
+
+    # No hay ninguna partida con el id
+    if len(game) == 0:
+        return errorHTTP(request,
+                         constants.ERROR_SELECTED_GAME_NOT_EXISTS)
+
+    game = game[0]
+
+    # La partida no ha finalizado todavia
+    if game.status != GameStatus.FINISHED:
+        return errorHTTP(request,
+                         constants.ERROR_NOT_FINISHED_YET)
+
+    # Si no somos ni el raton ni el gato, no podemos visualizar la partida
+    if not (game.cat_user == request.user or game.mouse_user == request.user):
+        return errorHTTP(request,
+                         constants.ERROR_NOT_ALLOWED_TO_REPRODUCE)
+
+    board = create_board_from_game(game)
+
+    context_dict = {'game': game, 'board': board}
+
+    winner = check_winner(game)
+
+    # Felicitamos al usuario que ha ganado
+    if winner == 1:
+        if request.user == game.cat_user:
+            msg = "Cats. Enhorabuena " + str(request.user)
+            context_dict['winner'] = msg
+        else:
+            msg = "Cats. Sigue practicando " + str(request.user)
+            context_dict['winner'] = msg
+    if winner == 2:
+        if request.user == game.mouse_user:
+            msg = "Mouse. Enhorabuena " + str(request.user)
+            context_dict['winner'] = msg
+        else:
+            msg = "Mouse. Sigue practicando " + str(request.user)
+            context_dict['winner'] = msg
+
+    # REVISAR: Esto era solo por probar
+    # Sacamos todos los movimientos que se han realizado en el juego
+    moves = Move.objects.filter(game=game).order_by('id')
+
+    return render(request, 'mouse_cat/reproduce_game.html', context_dict)
 
 
 def create_board(request, game, form=None):
@@ -619,16 +683,8 @@ def create_board(request, game, form=None):
 
     # Creamos el array que representa el tablero
     if game is not None:
-        # Primero colocamos todas las casillas a 0, y luego donde estén los
-        # gatos lo ponemos a 1, y donde esté el raton a -1
-        board = [0] * 64
-
-        board[game.cat1] = 1
-        board[game.cat2] = 1
-        board[game.cat3] = 1
-        board[game.cat4] = 1
-
-        board[game.mouse] = -1
+        # Creamos el tablero
+        board = create_board_from_game(game)
 
         # Si nos han mandado un formulario, significa que puede tener errores,
         # asi que devolvemos el tablero con el formulario correspondiente
@@ -643,3 +699,17 @@ def create_board(request, game, form=None):
         return render(request, 'mouse_cat/game.html',
                       {'game': game, 'board': board,
                        'move_form': MoveForm()})
+
+
+# Funcion que simplemente devuelve el tablero en funcion del estado de la partida
+def create_board_from_game(game):
+    # Primero colocamos todas las casillas a 0, y luego donde estén los
+    # gatos lo ponemos a 1, y donde esté el raton a -1
+    board = [0] * 64
+    board[game.cat1] = 1
+    board[game.cat2] = 1
+    board[game.cat3] = 1
+    board[game.cat4] = 1
+    board[game.mouse] = -1
+
+    return board

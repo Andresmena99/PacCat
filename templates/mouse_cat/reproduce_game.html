@@ -2,10 +2,12 @@
 
 {% block content %}
 <div id="content">
-    <h1>Game Finished</h1>
-    <h2>{{ winner }}</h2>
+    <h1>Game: {{ game.id }}</h1>
 
-    <h3>Last situation of the ended game:</h3>
+    Cats: <b>{{ game.cat_user.username }}</b>
+    Mouse: <b>{{ game.mouse_user.username }}</b>
+    Winner: <b>{{ winner }}</b>
+
     {% if board %}
         <p>Board: {{ board }}</p>
         <table id="chess_board">

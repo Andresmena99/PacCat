@@ -30,4 +30,7 @@ urlpatterns = [
     path('move/', views.move_service, name='move'),
 
     url(r'^finished_games/', views.finished_games, name='finished_games'),
+
+    url(r'^reproduce_game_service/(?P<game_id>\d+)/$', views.reproduce_game_service,
+        name='reproduce_game_service'),
 ]

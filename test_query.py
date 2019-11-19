@@ -9,7 +9,7 @@ django.setup()
 
 from django.contrib.auth.models import User
 from datamodel.models import Game, Move
-
+from itertools import chain
 try:
     usuario1 = User.objects.get(id=10)
 except User.DoesNotExist:
@@ -41,20 +41,12 @@ else:
     exit(0)
 
 # Sacamos la partida con el id mínimo
-partida = Game.objects.get(id=id_min)
-
-# metemos al usuario, y comenzamos la partida
-partida.mouse_user = usuario2
-
-# Al hacer save, se pone en status active
-partida.save()
-
-print("\n\nNos unimos a la partida con menor id, y realizamos los "
-      "movimientos:\n")
-Move.objects.create(
-    game=partida, player=partida.cat_user, origin=2, target=11)
-
-print(partida)
-Move.objects.create(
-    game=partida, player=partida.mouse_user, origin=59, target=52)
-print(partida)
+partida1 = Game.objects.filter(id = 18)
+partida2 = Game.objects.filter(id = 19)
+print("------------------------")
+print(partida1)
+print("------------------------")
+print(partida2)
+print("------------------------")
+result_list = list(chain(partida1, partida2))
+print(result_list)
