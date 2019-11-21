@@ -438,7 +438,7 @@ def select_game_service(request, id=-1):
         mis_juegos_mouse = Game.objects.filter(status=GameStatus.ACTIVE,
                                                mouse_user=request.user)
 
-        context_dict = {'as_cat': mis_juegos_cat, 'as_mouse': mis_juegos_mouse}
+        context_dict = {'games_as_cat': mis_juegos_cat, 'games_as_mouse': mis_juegos_mouse}
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
     # En este caso, significa que quiero jugar la partida

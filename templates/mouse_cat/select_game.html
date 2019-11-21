@@ -2,33 +2,54 @@
 
 {% block content %}
 <div id="content" class="old_ratonGato">
+    {% if not games_as_cat and not games_as_mouse %}
+        No hay partidas disponibles
+    {% else %}
     <h1>Select game</h1>
-    <p>
-        {% if as_cat %}
-            Games as cat:
-            <ul>
-            {% for game in as_cat %}
-                <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
+    <div class = main-select>
+        <table class=tabla-juegos>
+        <thead>
+            <tr>
+                <th>Usuario gato</th>
+                <th>Usuario raton</th>
+                <th>Id juego</th>
+                <th>Turno actual</th>
+                <th>Jugar</th>
+            </tr>
+        </thead>
+        {% if games_as_cat %}
+            {% for game in games_as_cat %}
+                <tr>
+                    <td>{{game.cat_user}}</td>
+                    <td>{{game.mouse_user}}</td>
+                    <td>{{game.id}}</td>
+                    {% if game.cat_turn == True %}
+                        <td>Turno gato</td>
+                    {% else %}
+                        <td>Turno raton</td>
+                    {% endif %}
+                    <td><a href="{% url 'select_game' game.id %}">CATIMAGE</a></td>
+                </tr>
             {% endfor %}
-            </ul>
-        {%  else %}
-            No games as cat
         {% endif %}
-    </p>
-
-    <p>
-        {% if as_mouse %}
-            Games as mouse:
-            <ul>
-            {% for game in as_mouse %}
-                <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
+        {% if games_as_mouse %}
+            {% for game in games_as_mouse %}
+                <tr>
+                    <td>{{game.cat_user}}</td>
+                    <td>{{game.mouse_user}}</td>
+                    <td>{{game.id}}</td>
+                    {% if game.cat_turn == True %}
+                        <td>Turno gato</td>
+                    {% else %}
+                        <td>Turno raton</td>
+                    {% endif %}
+                    <td><a href="{% url 'select_game' game.id %}">MOUSEIMAGE</a></td>
+                </tr>
             {% endfor %}
-            </ul>
-        {%  else %}
-            No games as mouse
         {% endif %}
-    </p>
-    
+        </table>
+    </div>
+    {% endif %}
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>
 {% endblock content %}

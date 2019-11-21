@@ -1,0 +1,36 @@
+/*CSS PARA LA SELECCION DE PARTIDA*/
+.main-select {
+  width: 100%;
+  font-size: 1rem;
+    padding: 3px 40px 10px;
+}
+
+.tabla-juegos {
+  background-color: #212529;
+  text-align: center;
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 2rem;
+    border: solid 2px #521e52;
+
+}
+
+.tabla-juegos th, td {
+  padding: 10px;
+
+}
+
+.tabla-juegos thead {
+  background-color: #000000;
+    border: solid 2px #521e52;
+  color: white;
+}
+
+.tabla-juegos tr:hover td {
+  background-color: #34558b;
+  color: #212529;
+}
+
+.imagestylesmall {
+  height: 2rem;
+}
