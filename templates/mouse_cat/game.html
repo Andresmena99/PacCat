@@ -1,13 +1,15 @@
 {% extends "mouse_cat/base.html" %}
 
 {% block content %}
-<div id="content" class="old_ratonGato">
-    <h1>Play</h1>
+
+<div class="container-fluid text-center old_ratonGato">
     <p>Game: <b>{{ game.id }}</b></p>
-    <form id="move_form" method="post" action="{% url 'move' %}">
+  <div class="row content">
+    <div class="col-sm-2 sidenav izquierda">
+      <form id="move_form" method="post" action="{% url 'move' %}">
         {% csrf_token %}
         <p>
-            Cats: <b>{{ game.cat_user.username }}</b>
+            Cat: <b>{{ game.cat_user.username }}</b>
             {% if game.cat_user.id == request.user.id %}
                 <blockquote class="cat">
                     {% if game.cat_turn %}
@@ -21,7 +23,7 @@
             {% endif %}
         </p>
         <p>
-            Mouse: <b>{{ game.mouse_user.username }}</b>
+
             {% if game.mouse_user.id == request.user.id %}
                 <blockquote class="mouse">
                     {% if not game.cat_turn %}
@@ -35,22 +37,28 @@
             {% endif %}
         </p>
     </form>
-
-    {% if board %}
-        <p>Board: {{ board }}</p>
-        <table id="chess_board">
+    </div>
+    <div class="col-sm-8 text-left">
+      {% if board %}
+        <table class="chess_board">
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
             <td id="cell_{{ forloop.counter0}}" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
                 {% if item ==  0 %}   x
-                {% elif item == 1 %}  &#9922;
-                {% else %}  &#9920; {% endif %}
+                {% elif item == 1 %} <img src="/static/img/gato.png" alt="Catimage" class="square_image">
+                {% else %} <img src="/static/img/raton.png" alt="Mouseimage" class="square_image">{% endif %}
             </td>
             {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
         {% endfor %}
         </table>
     {% endif %}
-
-    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+    </div>
+    <div class="col-sm-2 sidenav derecha">
+      <div class="well">
+        Mouse: <b>{{ game.mouse_user.username }}</b>
+      </div>
+    </div>
+  </div>
 </div>
+
 {% endblock content %}

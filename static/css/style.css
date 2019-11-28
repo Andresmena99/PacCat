@@ -1783,4 +1783,43 @@ ol {
 	color: #dddde7;
 }
 
+/* Estilo para el tablero de juego y el tamaño de sus casillas*/
+.chess_board{
+	table-layout: auto;
+	margin: auto;
+	width: 40rem;
+	height: 40rem;
+}
 
+.chess_board tr:nth-child(odd) td:nth-child(even){
+	background: blue;
+}
+
+.chess_board tr:nth-child(odd) td:nth-child(odd){
+	background: red;
+}
+
+.chess_board tr:nth-child(even) td:nth-child(even){
+	background: orange;
+}
+
+.chess_board tr:nth-child(even) td:nth-child(odd){
+	background: yellow;
+}
+
+.chess_board td{
+	color: #e72c33;
+}
+
+/* Paneles laterales con márgenes */
+.izquierda{
+	padding-left: 10rem !important;
+}
+.derecha{
+	padding-right: 10rem!important;
+}
+
+.square_image {
+	display: block;
+	vertical-align: bottom;
+}

@@ -6,7 +6,7 @@
         No hay partidas disponibles
     {% else %}
     <h1>Select game</h1>
-    <div class = main-select>
+    <div class=main-select>
         <table class=tabla-juegos>
         <thead>
             <tr>
@@ -28,7 +28,7 @@
                     {% else %}
                         <td>Turno raton</td>
                     {% endif %}
-                    <td><a href="{% url 'select_game' game.id %}">CATIMAGE</a></td>
+                    <td><a href="{% url 'select_game' game.id %}"><img src="/static/img/gato.png" alt="Catimage" class="imagestylesmall"></a></td>
                 </tr>
             {% endfor %}
         {% endif %}
@@ -43,7 +43,8 @@
                     {% else %}
                         <td>Turno raton</td>
                     {% endif %}
-                    <td><a href="{% url 'select_game' game.id %}">MOUSEIMAGE</a></td>
+                    <td><a href="{% url 'select_game' game.id %}"><img src="/static/img/raton.png" alt="Mouseimage" class="imagestylesmall"></a></td>
+
                 </tr>
             {% endfor %}
         {% endif %}
