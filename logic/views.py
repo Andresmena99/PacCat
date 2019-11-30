@@ -707,9 +707,9 @@ def create_board_from_game(game):
     # gatos lo ponemos a 1, y donde esté el raton a -1
     board = [0] * 64
     board[game.cat1] = 1
-    board[game.cat2] = 1
-    board[game.cat3] = 1
-    board[game.cat4] = 1
+    board[game.cat2] = 2
+    board[game.cat3] = 3
+    board[game.cat4] = 4
     board[game.mouse] = -1
 
     return board

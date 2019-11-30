@@ -1823,3 +1823,18 @@ ol {
 	display: block;
 	vertical-align: bottom;
 }
+
+/* Drag and drop */
+.drop {
+    color: rgba(255, 255, 255, 0);
+    height: 132px;
+    margin: 5px;
+    width: 132px;
+}
+.drag {
+    color: rgba(255, 255, 255, 0);
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+    user-select: none;
+}

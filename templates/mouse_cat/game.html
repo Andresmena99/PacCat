@@ -1,9 +1,12 @@
 {% extends "mouse_cat/base.html" %}
 
+{% load staticfiles %}
+
 {% block content %}
 
+<script src="{% static 'js/drag_and_drop.js' %}"></script>
+
 <div class="container-fluid text-center old_ratonGato">
-    <p>Game: <b>{{ game.id }}</b></p>
   <div class="row content">
     <div class="col-sm-2 sidenav izquierda">
       <form id="move_form" method="post" action="{% url 'move' %}">
@@ -38,15 +41,21 @@
         </p>
     </form>
     </div>
+
     <div class="col-sm-8 text-left">
       {% if board %}
+        {% static "" as baseUrl %}
         <table class="chess_board">
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
-            <td id="cell_{{ forloop.counter0}}" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
-                {% if item ==  0 %}   x
-                {% elif item == 1 %} <img src="/static/img/gato.png" alt="Catimage" class="square_image">
-                {% else %} <img src="/static/img/raton.png" alt="Mouseimage" class="square_image">{% endif %}
+            <td id="cell_{{ forloop.counter0}}" class="drop" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
+                {% if item ==  0 %}
+                .
+                {% elif item == -1 %}
+                    <img class="drag square_image" id="drag-main-{{item}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
+                {% else %}
+                    <img class="drag square_image" id="drag-{{item}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
+                {% endif %}
             </td>
             {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
         {% endfor %}
@@ -59,6 +68,7 @@
       </div>
     </div>
   </div>
+    <p>Game: <b>{{ game.id }}</b></p>
 </div>
 
 {% endblock content %}
