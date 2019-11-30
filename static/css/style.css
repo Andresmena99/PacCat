@@ -1792,19 +1792,19 @@ ol {
 }
 
 .chess_board tr:nth-child(odd) td:nth-child(even){
-	background: blue;
+	background: rgba(255, 255, 255, 0.73);
 }
 
 .chess_board tr:nth-child(odd) td:nth-child(odd){
-	background: red;
+	background: rgba(255, 0, 0, 0); /* REVISAR Esto estaba rojo*/
 }
 
 .chess_board tr:nth-child(even) td:nth-child(even){
-	background: orange;
+	background: rgba(255, 165, 0, 0); /* REVISAR Esto estaba naranja*/
 }
 
 .chess_board tr:nth-child(even) td:nth-child(odd){
-	background: yellow;
+	background: rgba(255, 255, 255, 0.73);
 }
 
 .chess_board td{
