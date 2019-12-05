@@ -448,18 +448,21 @@ def select_game_service(request, type=-1, game_id=-1):
 
     # En este caso, significa que quiero jugar la partida
     elif request.method == 'GET' and int(type) == 1 and int(game_id) != -1:
-        print("ME METO AQUI")
-
         # Confirmo que no me esten dando un id que no es valido. En caso de
         # ser válido, intento devuelver el estado de la partida llamando a
         # show game service
         game = Game.objects.filter(id=game_id)
         if len(game) > 0:
             game = game[0]
-            if game.status != GameStatus.ACTIVE:
+            if game.status == GameStatus.CREATED:
                 # Error porque el juego seleccionado no esta en estado activo
                 return HttpResponseNotFound(
                     constants.ERROR_SELECTED_GAME_NOT_AVAILABLE)
+
+            # Si la partida a terminado, nos muestra el ultimo estado de la partida
+            if game.status == GameStatus.FINISHED and (
+                    game.cat_user == request.user or game.mouse_user == request.user):
+                return end_game(request, check_winner(game), game)
 
             if game.cat_user != request.user \
                     and game.mouse_user != request.user:
@@ -571,7 +574,9 @@ def show_game_service(request):
         return render(request, "mouse_cat/error.html",
                       {'msg_error': "No game selected"})
 
+
 from django.views.decorators.csrf import csrf_exempt
+
 
 @csrf_exempt
 def move_service(request):

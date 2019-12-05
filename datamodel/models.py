@@ -142,8 +142,7 @@ def check_winner(game):
 
     if game is not None:
         # Compruebo si el gato ha llegado al otro extremo
-        print(game.mouse_user)
-        if game.mouse_user in [0, 2, 4, 6]:
+        if game.mouse in [0, 2, 4, 6]:
             return 2
 
         if game.mouse in [game.cat1, game.cat2, game.cat3, game.cat4]:
