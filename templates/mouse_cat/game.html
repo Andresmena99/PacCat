@@ -50,7 +50,7 @@
             {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
             <td id="cell_{{ forloop.counter0}}" class="drop" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
                 {% if item ==  0 %}
-                .
+                &nbsp
                 {% elif item == -1 %}
                     <img class="drag square_image" id="drag-main-{{item}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
                 {% else %}

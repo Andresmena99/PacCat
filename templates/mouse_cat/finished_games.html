@@ -2,18 +2,45 @@
 
 {% block content %}
 <div id="content" class="old_ratonGato">
-    {% if finished %}
-    <h1>Select which game you want to reproduce</h1>
-    <p>
-        <ul>
-        {% for game in finished %}
-            <li> <a href="{% url 'reproduce_game_service' game.id %}">{{ game }}</a></li>
-        {% endfor %}
-        </ul>
-    </p>
+    {% if not finished_as_cat and not finished_as_mouse %}
+        No has finalizado ninguna partida todavia
     {% else %}
-        <h1>No games to reproduce</h1>
+
+    <h1>Selecciona la partida para reproducir</h1>
+    <div class=main-select>
+        <table class=tabla-juegos>
+        <thead>
+            <tr>
+                <th>Usuario gato</th>
+                <th>Usuario raton</th>
+                <th>Id juego</th>
+                <th>Reproducir</th>
+            </tr>
+        </thead>
+        {% if finished_as_cat %}
+            {% for game in finished_as_cat %}
+                <tr>
+                    <td>{{game.cat_user}}</td>
+                    <td>{{game.mouse_user}}</td>
+                    <td>{{game.id}}</td>
+                    <td><a href="{% url 'select_game' type=3 game_id=game.id %}"><img src="/static/img/gato.png" alt="Catimage" class="imagestylesmall"></a></td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+        {% if finished_as_mouse %}
+            {% for game in finished_as_mouse %}
+                <tr>
+                    <td>{{game.cat_user}}</td>
+                    <td>{{game.mouse_user}}</td>
+                    <td>{{game.id}}</td>
+                    <td><a href="{% url 'select_game' type=3 game_id=game.id %}"><img src="/static/img/raton.png" alt="Mouseimage" class="imagestylesmall"></a></td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+        </table>
+    </div>
     {% endif %}
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>
 {% endblock content %}
+

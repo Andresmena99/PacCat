@@ -21,9 +21,11 @@ urlpatterns = [
     path('counter/', views.counter_service, name='counter'),
     path('create_game/', views.create_game_service, name='create_game'),
     path('join_game/', views.join_game_service, name='join_game'),
-    url(r'^select_game/(?P<id>\d+)/$', views.select_game_service,
+    url(r'^select_game/(?P<type>\d+)/$', views.select_game_service,
         name='select_game'),
-    url(r'^select_game/(?P<game_id>\d+)/$', views.select_game_service,
+    url(r'^select_game/(?P<type>\d+)/(?P<game_id>\d+)/$', views.select_game_service,
+        name='select_game'),
+    url(r'^select_game/(?P<type>\d+)/(?P<join>\d+)/$', views.select_game_service,
         name='select_game'),
     url(r'^select_game/', views.select_game_service, name='select_game'),
     path('play/', views.show_game_service, name='show_game'),
@@ -32,5 +34,7 @@ urlpatterns = [
     url(r'^finished_games/', views.finished_games, name='finished_games'),
 
     url(r'^reproduce_game_service/(?P<game_id>\d+)/$', views.reproduce_game_service,
-        name='reproduce_game_service'),
+        name='reproduce_game'),
+    path('reproduce_game/', views.reproduce_game_service, name='reproduce_game'),
+
 ]

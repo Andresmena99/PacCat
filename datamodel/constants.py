@@ -20,7 +20,7 @@ EEROR_ACCOUNT_DISABLED = "Your mouse_cat account is disabled."
 ERROR_RESTRICTED_ANONYMOUS = "Action restricted to anonymous users"
 MSG_ERROR_NO_AVAILABLE_GAMES = "There is no available games|No hay juegos " \
                                "disponibles"
-ERROR_SELECTED_GAME_NOT_AVAILABLE = "El juego seleccionado no esta disponible"
+ERROR_SELECTED_GAME_NOT_AVAILABLE = "El juego seleccionado ya no esta disponible"
 ERROR_SELECTED_GAME_NOT_YOURS = "Este no es tu juego"
 ERROR_SELECTED_GAME_NOT_EXISTS = "El juego seleccionado no existe"
 GAME_SELECTED_SESSION_ID = 'sesion_id'
@@ -30,3 +30,8 @@ CAT_WINNER = "El gato ha ganado la partida"
 ERROR_NOT_ALLOWED_TO_REPRODUCE = "No puedes reproducir esta partida, porque " \
                                  "no eras uno de sus participantes"
 ERROR_NOT_FINISHED_YET = "La partida no ha finalizado todavia"
+
+
+GAME_SELECTED_REPRODUCE_SESSION_ID = 'reproduce_id'
+GAME_SELECTED_MOVE_NUMBER = 'move_number'
+GAME_REPRODUCE_BOARD = 'board_of_game'

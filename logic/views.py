@@ -404,7 +404,7 @@ def join_game_service(request):
 
 
 @login_required
-def select_game_service(request, id=-1):
+def select_game_service(request, type=-1, game_id=-1):
     """
         Funcion que nos muestra todas las partidas existentes y nos permite
         comenzar a jugar en cualquiera de ellas con tan solo un click
@@ -413,9 +413,14 @@ def select_game_service(request, id=-1):
         ----------
         request : HttpRequest
             Solicitud Http
-        id : int (default -1)
+        type : int (default -1)
+            Tipo de servicio que queremos usar:
+                1: Mostrar partidas que estamos jugando
+                2: Mostrar partidas a las que nos podemos unir
+                3: Mostrar partidas para reproducir
+
+        game_id : int (default -1)
             Id de la partida seleccionada para jugar, por defecto a -1
-            lo cual quiere decir que queremos ver la lista de partidas.
 
         Returns
         -------
@@ -426,8 +431,8 @@ def select_game_service(request, id=-1):
         -------
             Eric Morales
     """
-
-    if request.method == 'GET' and id == -1:
+    # Esto significa que quiero ver las partidas que estoy jugando
+    if request.method == 'GET' and int(type) == 1 and int(game_id) == -1:
         # Tengo que añadir un campo id a cada partida, para luego poder hacer
         # bien el template
 
@@ -442,11 +447,13 @@ def select_game_service(request, id=-1):
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
     # En este caso, significa que quiero jugar la partida
-    if id != -1:
+    elif request.method == 'GET' and int(type) == 1 and int(game_id) != -1:
+        print("ME METO AQUI")
+
         # Confirmo que no me esten dando un id que no es valido. En caso de
         # ser válido, intento devuelver el estado de la partida llamando a
         # show game service
-        game = Game.objects.filter(id=id)
+        game = Game.objects.filter(id=game_id)
         if len(game) > 0:
             game = game[0]
             if game.status != GameStatus.ACTIVE:
@@ -461,13 +468,70 @@ def select_game_service(request, id=-1):
                 return HttpResponseNotFound(
                     constants.ERROR_SELECTED_GAME_NOT_YOURS)
 
-            request.session[constants.GAME_SELECTED_SESSION_ID] = id
+            request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
             return show_game_service(request)
 
         # Error porque no se ha encontrado un juego con el id solicitado
         else:
             return HttpResponseNotFound(
                 constants.ERROR_SELECTED_GAME_NOT_EXISTS)
+
+    # Quiero ver las partidas a las que me quiero unir
+    elif request.method == 'GET' and int(type) == 2 and int(game_id) == -1:
+        # Entre todas las partidas, miro las que solo tienen un jugador
+        one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
+
+        # Tengo que dejar en las que el jugador no sea el propio mouse_user,
+        # ya que un jugador no puede jugar contra si mismo
+        un_solo_jugador = []
+        for partida in one_player.order_by('id'):
+            if partida.cat_user != request.user:
+                un_solo_jugador.append(partida)
+
+        # Imprimo todas las partidas disponibles para el usuario
+        return render(request, 'mouse_cat/join_game.html',
+                      {'un_solo_jugador': un_solo_jugador})
+
+    # Este caso significa que el usuario ya me ha dicho a que partida se quiere unir
+    elif request.method == 'GET' and int(type) == 2 and int(game_id) != -1:
+        # Compruebo que la partida siga estando disponible (la puede haber
+        # cogido otro jugador mientras yo esperaba a seleccionarla)
+        game = Game.objects.filter(id=game_id)
+        if len(game) > 0:
+            game = game[0]
+            print(game)
+            print(game.status != GameStatus.ACTIVE)
+            print(game.mouse_user is None)
+            if game.status != GameStatus.CREATED or game.mouse_user is not None:
+                return render(request, 'mouse_cat/join_game.html',
+                              {'msg_error': constants.ERROR_SELECTED_GAME_NOT_AVAILABLE})
+
+            # Le meto en la partida y empieza el juego
+            else:
+                request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
+                game.mouse_user = request.user
+                game.save()
+                return show_game_service(request)
+
+
+        else:
+            return render(request, 'mouse_cat/join_game.html',
+                          {'msg_error': constants.ERROR_SELECTED_GAME_NOT_EXISTS})
+
+    # Muestro todas las partidas finalizadas en las que yo era alguno de los
+    # participantes
+    elif request.method == 'GET' and int(type) == 3 and int(game_id) == -1:
+        finished_as_cat = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
+        finished_as_mouse = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
+        context_dict = {'finished_as_cat': finished_as_cat, 'finished_as_mouse': finished_as_mouse}
+
+        return render(request, "mouse_cat/finished_games.html", context_dict)
+
+    # Entrar en modo reproduccion
+    elif request.method == 'GET' and int(type) == 3 and int(game_id) != -1:
+        # Almacenamos en la sesion el juego que se está reproduciendo
+        request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID] = game_id
+        return reproduce_game_service(request)
 
 
 @login_required
@@ -593,8 +657,8 @@ def finished_games(request):
 
     # Tenemos que meter al usuario en la partida con id mas alto
     # Entre todas las partidas, miro las que solo tienen un jugador
-    finalizadas_raton = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user)
-    finalizadas_gato = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user)
+    finalizadas_raton = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
+    finalizadas_gato = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
 
     partidas_finalizadas = list(chain(finalizadas_raton, finalizadas_gato))
     if len(partidas_finalizadas) > 0:
@@ -604,10 +668,14 @@ def finished_games(request):
 
 
 @login_required
-def reproduce_game_service(request, game_id):
+def reproduce_game_service(request):
     """PARAMETROS DE ENTRADA:
-        game_id: Partida de la que se está mostrando el servicio
+        Nos mandan un formulario:
+            1: Next
+            -1: Previous
+            2: Play
     """
+    game_id = request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID]
     game = Game.objects.filter(id=game_id)
 
     # No hay ninguna partida con el id
@@ -627,33 +695,62 @@ def reproduce_game_service(request, game_id):
         return errorHTTP(request,
                          constants.ERROR_NOT_ALLOWED_TO_REPRODUCE)
 
-    board = create_board_from_game(game)
+    # Esto es cuando nos mandan un formulario de movimiento
+    if request.method == "POST":
+        # Esto esta "mal", el enunciado no quiere que lo programemos asi...
+        print("----------------")
+        move = int(request.POST.get("Movimiento"))
+        json_dict = get_move_service(request, move)
 
-    context_dict = {'game': game, 'board': board}
+        # Una vez tenemos el diccionario de json, ya podemos imprimir el tablero con el movimiento hecho.
+        # El tablero lo habiamos almacenado en la sesion
+        board = request.session[constants.GAME_REPRODUCE_BOARD]
+        cat_origin = board[json_dict['origin']]
+        board[json_dict['origin']] = 0
+        board[json_dict['target']] = cat_origin
+        request.session[constants.GAME_REPRODUCE_BOARD] = board
 
-    winner = check_winner(game)
+        context_dict = {'game': game, 'board': board}
 
-    # Felicitamos al usuario que ha ganado
-    if winner == 1:
-        if request.user == game.cat_user:
-            msg = "Cats. Enhorabuena " + str(request.user)
-            context_dict['winner'] = msg
-        else:
-            msg = "Cats. Sigue practicando " + str(request.user)
-            context_dict['winner'] = msg
-    if winner == 2:
-        if request.user == game.mouse_user:
-            msg = "Mouse. Enhorabuena " + str(request.user)
-            context_dict['winner'] = msg
-        else:
-            msg = "Mouse. Sigue practicando " + str(request.user)
-            context_dict['winner'] = msg
+        # Si no hay mas movimientos, significa que ha terminado. Felicitamos al ganador
+        if json_dict['next'] == 0:
+            winner = check_winner(game)
 
-    # REVISAR: Esto era solo por probar
-    # Sacamos todos los movimientos que se han realizado en el juego
-    moves = Move.objects.filter(game=game).order_by('id')
+            # Felicitamos al usuario que ha ganado
+            if winner == 1:
+                if request.user == game.cat_user:
+                    msg = "Cats. Enhorabuena " + str(request.user)
+                    context_dict['winner'] = msg
+                else:
+                    msg = "Cats. Sigue practicando " + str(request.user)
+                    context_dict['winner'] = msg
+            if winner == 2:
+                if request.user == game.mouse_user:
+                    msg = "Mouse. Enhorabuena " + str(request.user)
+                    context_dict['winner'] = msg
+                else:
+                    msg = "Mouse. Sigue practicando " + str(request.user)
+                    context_dict['winner'] = msg
 
-    return render(request, 'mouse_cat/reproduce_game.html', context_dict)
+        return render(request, 'mouse_cat/reproduce_game.html', context_dict)
+
+    # Coloco el tablero en la posicion inicial
+    if request.method == "GET":
+        # Ponemos a 0 el movimiento por le que vamos reproduciendo
+        request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
+
+        # Creo un tablero con los gatos en las posiciones iniciales
+        board = [0] * 64
+        board[0] = 1
+        board[2] = 2
+        board[4] = 3
+        board[6] = 4
+        board[59] = -1
+        request.session[constants.GAME_REPRODUCE_BOARD] = board
+
+        context_dict = {'game': game, 'board': board}
+
+        return render(request, 'mouse_cat/reproduce_game.html', context_dict)
 
 
 def create_board(request, game, form=None):
@@ -713,3 +810,45 @@ def create_board_from_game(game):
     board[game.mouse] = -1
 
     return board
+
+
+# Esta funcion nos devuelve el json que nos pide el enunciado,
+def get_move_service(request, shift):
+    game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
+    if len(game) == 0:
+        return HttpResponse("ERROR")
+
+    game = game[0]
+
+    moves = Move.objects.filter(game=game).order_by('id')
+    move_number = request.session[constants.GAME_SELECTED_MOVE_NUMBER]
+    if shift == -1:
+        move_number -= 1
+
+    # En move number tenemos el indice movimiento que queremos realizar de moves
+    if move_number < 0 or move_number >= len(moves):
+        print("ERROR EL MOVIMIENTO ESTA FUERA DE INDICE")
+        return HttpResponse("ERROR mirar terminal")
+
+    real_move = moves[move_number]
+
+    # En el diccionario, los campos previous y next se identifican con 1 (true)
+    # y 0 (false)
+    json_dict = {}
+    if shift == 1:
+        json_dict['origin'] = real_move.origin
+        json_dict['target'] = real_move.target
+    else:
+        json_dict['origin'] = real_move.target
+        json_dict['target'] = real_move.origin
+
+    json_dict['previous'] = 1 if move_number > 0 else 0
+    json_dict['next'] = 1 if move_number < len(moves) - 1 else 0
+
+    if shift == 1:
+        request.session[constants.GAME_SELECTED_MOVE_NUMBER] += 1
+    elif shift == -1:
+        request.session[constants.GAME_SELECTED_MOVE_NUMBER] -= 1
+
+    print(json_dict)
+    return json_dict

@@ -54,15 +54,15 @@
                     <ul class="main-menu primary-menu">
                         <li><a href="{% url 'index' %}">Inicio</a></li>
                         <li><a href="{% url 'counter' %}">Contador</a></li>
-                        <li><a href="{% url 'select_game' %}" class="slidermenu">Partidas</a>
+                        <li><a href="{% url 'select_game' type=1 %}" class="slidermenu">Partidas</a>
                             <ul class="sub-menu">
                                 <li><a href="{% url 'create_game' %}">Nueva Partida</a></li>
-                                <li><a href="{% url 'join_game' %}">Unirse a Partida Existente</a></li>
-                                <li><a href="{% url 'select_game' %}">Seleccionar Partida</a></li>
+                                <li><a href="{% url 'select_game' type=2 %}">Unirse a Partida Existente</a></li>
+                                <li><a href="{% url 'select_game' type=1 %}">Seleccionar Partida</a></li>
                             </ul>
                         </li>
                         <li><a href="{% url 'show_game' %}">Jugar</a></li>
-                        <li><a href="{% url 'finished_games' %}">Modo Cine</a></li>
+                        <li><a href="{% url 'select_game' type=3 %}">Modo Cine</a></li>
 
                     </ul>
                 </nav>

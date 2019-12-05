@@ -6,7 +6,9 @@
 
     Cats: <b>{{ game.cat_user.username }}</b>
     Mouse: <b>{{ game.mouse_user.username }}</b>
-    Winner: <b>{{ winner }}</b>
+    {% if winner %}
+        Winner: <b>{{ winner }}</b>
+    {% endif %}
 
     {% if board %}
         <p>Board: {{ board }}</p>
@@ -22,6 +24,21 @@
         {% endfor %}
         </table>
     {% endif %}
+        <form action="{% url 'reproduce_game' %}" method="POST">
+        {% csrf_token %}
+        <label><b>Movimiento: </b></label>
+
+        <label>Next</label>
+        <input name="Movimiento" type="radio" value="1">
+
+        <label>Previous</label>
+        <input name="Movimiento" type="radio" value="-1">
+
+        <label>Play</label>
+        <input name="Movimiento" type="radio" value="3">
+
+        <button type="submit"><b>Send</b></button>
+        </form>
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>
 {% endblock content %}
