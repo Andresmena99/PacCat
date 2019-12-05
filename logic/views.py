@@ -571,8 +571,9 @@ def show_game_service(request):
         return render(request, "mouse_cat/error.html",
                       {'msg_error': "No game selected"})
 
+from django.views.decorators.csrf import csrf_exempt
 
-@login_required
+@csrf_exempt
 def move_service(request):
     """
         Funcion que realiza el movimiento solicitado por el formulario

@@ -4,7 +4,72 @@
 
 {% block content %}
 
-<script src="{% static 'js/drag_and_drop.js' %}"></script>
+
+<script type="text/javascript">
+
+    function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+    $(document).ready(function () {
+        $('.drop').on('dragover', function(e){
+            e.preventDefault();
+        });
+        $('.drag').on('dragstart', function(e) {
+            e.originalEvent.dataTransfer.setData('object', e.target.id);
+        });
+        $('.drop').on('drop', function(e) {
+            e.preventDefault();
+            var data = e.originalEvent.dataTransfer.getData('object');
+            do_move(data, parseInt(e.target.id.split('_')[1], 10));
+            e.target.appendChild(document.getElementById(data));
+            $(this).off('dragover drop');
+    });
+    });
+
+    function do_move(o, t) {
+        alert(o);
+        alert(t);
+        $.post("{% url 'move' %}",
+            {
+                token: csrftoken,
+                origin: o,
+                target: t
+            },
+           function (response) {
+                // redirect must be defined and must be true
+                if (response.redirect !== undefined && response.redirect) {
+                    window.location.href = response.redirect_url;
+                }
+            });
+    }
+</script>
+
 
 <div class="container-fluid text-center old_ratonGato">
   <div class="row content">
@@ -48,13 +113,13 @@
         <table class="chess_board">
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
-            <td id="cell_{{ forloop.counter0}}" class="drop" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
+            <td id="cell_{{forloop.counter0}}" class="drop" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
                 {% if item ==  0 %}
                 &nbsp
                 {% elif item == -1 %}
-                    <img class="drag square_image" id="drag-main-{{item}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
+                    <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
                 {% else %}
-                    <img class="drag square_image" id="drag-{{item}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
+                    <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
                 {% endif %}
             </td>
             {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
