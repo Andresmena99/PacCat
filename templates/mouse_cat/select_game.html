@@ -28,7 +28,7 @@
                     {% else %}
                         <td>Turno raton</td>
                     {% endif %}
-                    <td><a href="{% url 'select_game' type=1 game_id=game.id %}"><img src="/static/img/gato.png" alt="Catimage" class="imagestylesmall"></a></td>
+                    <td><a href="{% url 'select_game' tipo=1 game_id=game.id %}"><img src="/static/img/gato.png" alt="Catimage" class="imagestylesmall"></a></td>
                 </tr>
             {% endfor %}
         {% endif %}
@@ -43,7 +43,7 @@
                     {% else %}
                         <td>Turno raton</td>
                     {% endif %}
-                    <td><a href="{% url 'select_game' type=1 game_id=game.id %}"><img src="/static/img/raton.png" alt="Mouseimage" class="imagestylesmall"></a></td>
+                    <td><a href="{% url 'select_game' tipo=1 game_id=game.id %}"><img src="/static/img/raton.png" alt="Mouseimage" class="imagestylesmall"></a></td>
 
                 </tr>
             {% endfor %}

@@ -145,7 +145,7 @@ SERVICE_DEF = {
     PLAY_GAME_MOVING: {
         "title": SHOW_GAME_TITLE,
         "pattern": r"<blockquote class=\"(?P<turn>\w+)\">(.|\n)*?"
-                   r"<input type=\"submit\" value=\"Move\" />(.|\n)*?</blockquote>"
+                   r"<input tipo=\"submit\" value=\"Move\" />(.|\n)*?</blockquote>"
     },
     PLAY_GAME_WAITING: {
         "title": SHOW_GAME_TITLE,

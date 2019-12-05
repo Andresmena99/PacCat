@@ -23,7 +23,7 @@
                     <td>{{game.cat_user}}</td>
                     <td>{{game.mouse_user}}</td>
                     <td>{{game.id}}</td>
-                    <td><a href="{% url 'select_game' type=3 game_id=game.id %}"><img src="/static/img/gato.png" alt="Catimage" class="imagestylesmall"></a></td>
+                    <td><a href="{% url 'select_game' tipo=3 game_id=game.id %}"><img src="/static/img/gato.png" alt="Catimage" class="imagestylesmall"></a></td>
                 </tr>
             {% endfor %}
         {% endif %}
@@ -33,7 +33,7 @@
                     <td>{{game.cat_user}}</td>
                     <td>{{game.mouse_user}}</td>
                     <td>{{game.id}}</td>
-                    <td><a href="{% url 'select_game' type=3 game_id=game.id %}"><img src="/static/img/raton.png" alt="Mouseimage" class="imagestylesmall"></a></td>
+                    <td><a href="{% url 'select_game' tipo=3 game_id=game.id %}"><img src="/static/img/raton.png" alt="Mouseimage" class="imagestylesmall"></a></td>
                 </tr>
             {% endfor %}
         {% endif %}

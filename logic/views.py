@@ -404,7 +404,7 @@ def join_game_service(request):
 
 
 @login_required
-def select_game_service(request, type=-1, game_id=-1):
+def select_game_service(request, tipo=-1, game_id=-1):
     """
         Funcion que nos muestra todas las partidas existentes y nos permite
         comenzar a jugar en cualquiera de ellas con tan solo un click
@@ -432,7 +432,7 @@ def select_game_service(request, type=-1, game_id=-1):
             Eric Morales
     """
     # Esto significa que quiero ver las partidas que estoy jugando
-    if request.method == 'GET' and int(type) == 1 and int(game_id) == -1:
+    if request.method == 'GET' and int(tipo) == 1 and int(game_id) == -1:
         # Tengo que añadir un campo id a cada partida, para luego poder hacer
         # bien el template
 
@@ -447,7 +447,7 @@ def select_game_service(request, type=-1, game_id=-1):
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
     # En este caso, significa que quiero jugar la partida
-    elif request.method == 'GET' and int(type) == 1 and int(game_id) != -1:
+    elif request.method == 'GET' and int(tipo) == 1 and int(game_id) != -1:
         # Confirmo que no me esten dando un id que no es valido. En caso de
         # ser válido, intento devuelver el estado de la partida llamando a
         # show game service
@@ -480,7 +480,7 @@ def select_game_service(request, type=-1, game_id=-1):
                 constants.ERROR_SELECTED_GAME_NOT_EXISTS)
 
     # Quiero ver las partidas a las que me quiero unir
-    elif request.method == 'GET' and int(type) == 2 and int(game_id) == -1:
+    elif request.method == 'GET' and int(tipo) == 2 and int(game_id) == -1:
         # Entre todas las partidas, miro las que solo tienen un jugador
         one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
 
@@ -496,7 +496,7 @@ def select_game_service(request, type=-1, game_id=-1):
                       {'un_solo_jugador': un_solo_jugador})
 
     # Este caso significa que el usuario ya me ha dicho a que partida se quiere unir
-    elif request.method == 'GET' and int(type) == 2 and int(game_id) != -1:
+    elif request.method == 'GET' and int(tipo) == 2 and int(game_id) != -1:
         # Compruebo que la partida siga estando disponible (la puede haber
         # cogido otro jugador mientras yo esperaba a seleccionarla)
         game = Game.objects.filter(id=game_id)
@@ -523,7 +523,7 @@ def select_game_service(request, type=-1, game_id=-1):
 
     # Muestro todas las partidas finalizadas en las que yo era alguno de los
     # participantes
-    elif request.method == 'GET' and int(type) == 3 and int(game_id) == -1:
+    elif request.method == 'GET' and int(tipo) == 3 and int(game_id) == -1:
         finished_as_cat = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
         finished_as_mouse = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
         context_dict = {'finished_as_cat': finished_as_cat, 'finished_as_mouse': finished_as_mouse}
@@ -531,7 +531,7 @@ def select_game_service(request, type=-1, game_id=-1):
         return render(request, "mouse_cat/finished_games.html", context_dict)
 
     # Entrar en modo reproduccion
-    elif request.method == 'GET' and int(type) == 3 and int(game_id) != -1:
+    elif request.method == 'GET' and int(tipo) == 3 and int(game_id) != -1:
         # Almacenamos en la sesion el juego que se está reproduciendo
         request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID] = game_id
         return reproduce_game_service(request)
