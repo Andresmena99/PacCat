@@ -855,6 +855,17 @@ def create_board(request, game, form=None):
             Eric Morales
     """
 
+    def getChessColor(pos):
+        if (pos // 8) % 2 == 0:
+            if pos % 2 != 0:
+                return "white"
+            else:
+                return "black"
+        else:
+            if pos % 2 == 0:
+                return "black"
+        return "white"
+
     # Creamos el array que representa el tablero
     if game is not None:
         # Creamos el tablero
@@ -874,7 +885,6 @@ def create_board(request, game, form=None):
                       {'game': game, 'board': board,
                        'move_form': MoveForm()})
 
-
 # Funcion que simplemente devuelve el tablero en funcion del estado de la partida
 def create_board_from_game(game):
     # Primero colocamos todas las casillas a 0, y luego donde estén los
@@ -886,7 +896,10 @@ def create_board_from_game(game):
     board[game.cat4] = 4
     board[game.mouse] = -1
 
-    return board
+    newBoard = []
+    for c in range(0, 64, 8):
+        newBoard.append(board[c: c+8])
+    return newBoard
 
 
 # Esta funcion nos devuelve el json que nos pide el enunciado,

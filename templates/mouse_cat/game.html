@@ -110,21 +110,39 @@ $.ajaxSetup({
     <div class="col-sm-8 text-left">
       {% if board %}
         {% static "" as baseUrl %}
-        <table class="chess_board">
-        {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
-            <td id="cell_{{forloop.counter0}}" class="drop" style='width:20px;border:1px solid #a8a8a8;text-align:center;'>
-                {% if item ==  0 %}
-                &nbsp
-                {% elif item == -1 %}
-                    <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
-                {% else %}
-                    <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
-                {% endif %}
-            </td>
-            {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
+        <div class="chess_board">
+        {% for miniBoard in board %}
+            {% if forloop.counter0|divisibleby:2 %}
+                {% for item in miniBoard %}
+                    {% if forloop.counter0|divisibleby:2 %}
+                    <div id="cell_{{forloop.counter0}}" class="drop black" >
+                    {% else %}
+                    <div id="cell_{{forloop.counter0}}" class="drop white" >
+                    {% endif %}
+                        {% if item ==  -1 %}
+                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
+                        {% elif item == 1 or item == 2 or item == 3 or item == 4 %}
+                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                {% for item in miniBoard %}
+                    {% if forloop.counter0|divisibleby:2 %}
+                    <div id="cell_{{forloop.counter0}}" class="drop white" >
+                    {% else %}
+                    <div id="cell_{{forloop.counter0}}" class="drop black" >
+                    {% endif %}
+                        {% if item ==  -1 %}
+                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
+                        {% elif item == 1 or item == 2 or item == 3 or item == 4 %}
+                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% endif %}
         {% endfor %}
-        </table>
+        </div>
     {% endif %}
     </div>
     <div class="col-sm-2 sidenav derecha">

@@ -1523,6 +1523,10 @@ ol {
 	.container {
 		max-width: 1175px;
 	}
+	.chess_board {
+	  width: 40vw!important;
+	  height: 40vw!important;
+	}
 }
 
 @media (max-width: 1530px) {
@@ -1535,6 +1539,10 @@ ol {
 /* Medium screen : 992px. */
 
 @media only screen and (min-width: 992px) and (max-width: 1199px) {
+	.chess_board {
+	  width: 40vw!important;
+	  height: 40vw!important;
+	}
 	.blog-item .blog-thumb {
 		width: 250px;
 	}
@@ -1785,32 +1793,36 @@ ol {
 	color: #dddde7;
 }
 
-/* Estilo para el tablero de juego y el tamaño de sus casillas*/
-.chess_board{
-	table-layout: auto;
-	margin: auto;
-	width: 40rem;
-	height: 40rem;
+/* Estilo para el tablero de juego*/
+
+.chess_board {
+  border: 4px solid rgba(255, 255, 255, 0.73);
+  text-align: center;
+  width: 70vh;
+  height: 70vh;
+  margin: auto;
 }
 
-.chess_board tr:nth-child(odd) td:nth-child(even){
-	background: rgba(255, 255, 255, 0.73);
+.black {
+  background-color: rgba(255, 165, 0, 0);
+  height: 12.5%;
+  width: 12.5%;
+  max-height: 100vw;
+  max-width: 100vw;
+  float: left;
+  padding: 0;
+  margin: auto;
 }
 
-.chess_board tr:nth-child(odd) td:nth-child(odd){
-	background: rgba(255, 0, 0, 0); /* REVISAR Esto estaba rojo*/
-}
-
-.chess_board tr:nth-child(even) td:nth-child(even){
-	background: rgba(255, 165, 0, 0); /* REVISAR Esto estaba naranja*/
-}
-
-.chess_board tr:nth-child(even) td:nth-child(odd){
-	background: rgba(255, 255, 255, 0.73);
-}
-
-.chess_board td{
-	color: #e72c33;
+.white {
+  background-color: rgba(255, 255, 255, 0.73);
+  height: 12.5%;
+  width: 12.5%;
+  max-height: 100vw;
+  max-width: 100vw;
+  float: left;
+  padding: 0;
+  margin: auto;
 }
 
 /* Paneles laterales con márgenes */
@@ -1822,22 +1834,13 @@ ol {
 }
 
 .square_image {
+	padding: 10px;
 	display: block;
 	vertical-align: bottom;
 }
 
 /* Drag and drop */
-.drop {
-    color: rgba(255, 255, 255, 0);
-    height: 132px;
-    margin: 5px;
-    width: 132px;
-}
 .drag {
-    color: rgba(255, 255, 255, 0);
-    display: inline-block;
-    margin: 5px;
-    padding: 5px;
     user-select: none;
 }
 
@@ -1887,7 +1890,7 @@ ol {
 .categorias {
   padding: 0;
   position: absolute;
-  background: #1f2f50;
+  background: #2d1854;
   width: 100%;
   visibility: hidden;
   opacity: 0;
@@ -1905,7 +1908,7 @@ ol {
 }
 
 .categorias li a:hover {
-  background: #24365c;
+  background: #65607b;
 }
 
 
