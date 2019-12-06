@@ -1771,8 +1771,10 @@ ol {
 
 .old_ratonGato {
 	padding-top: 10rem;
-	padding-left: 4rem;
+	padding-right: 2rem;
+	padding-left: 2rem;
 	color: #ececf6;
+	text-align: center;
 }
 
 .old_ratonGato p {

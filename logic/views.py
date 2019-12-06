@@ -20,6 +20,7 @@ from datamodel import constants
 from datamodel.models import Counter, Game, GameStatus, Move, check_winner
 from logic.forms import SignupForm, MoveForm, UserForm
 from itertools import chain
+from django.core.paginator import Paginator
 
 
 def anonymous_required(f):
@@ -456,22 +457,24 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
 
         context_dict = {}
         if int(filter) == -1:
-            context_dict['games_as_cat'] = mis_juegos_cat
-            context_dict['games_as_mouse'] = mis_juegos_mouse
+            games_list = list(chain(mis_juegos_cat, mis_juegos_mouse))
 
         elif int(filter) == 1:
-            context_dict['games_as_cat'] = mis_juegos_cat
+            games_list = mis_juegos_cat
 
         elif int(filter) == 2:
-            context_dict['games_as_mouse'] = mis_juegos_mouse
+            games_list = mis_juegos_mouse
 
         elif int(filter) == 3:
             mis_juegos_cat = mis_juegos_cat.filter(cat_turn=True)
             mis_juegos_mouse = mis_juegos_mouse.filter(cat_turn=False)
-            context_dict['games_as_cat'] = mis_juegos_cat
-            context_dict['games_as_mouse'] = mis_juegos_mouse
+            games_list = list(chain(mis_juegos_cat, mis_juegos_mouse))
 
-        return render(request, 'mouse_cat/select_game.html', context_dict)
+        # Show 5 games per page
+        paginator = Paginator(games_list, 5)
+        page = request.GET.get('page')
+        games = paginator.get_page(page)
+        return render(request, 'mouse_cat/select_game.html', {'games': games})
 
     # En este caso, significa que quiero jugar la partida
     elif request.method == 'GET' and int(tipo) == 1 and int(game_id) != -1:
@@ -524,15 +527,17 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
 
         # Tengo que dejar en las que el jugador no sea el propio mouse_user,
         # ya que un jugador no puede jugar contra si mismo
-        un_solo_jugador = []
+        games_list = []
         if len(one_player) > 0:
             for partida in one_player.order_by('id'):
                 if partida.cat_user != request.user:
-                    un_solo_jugador.append(partida)
+                    games_list.append(partida)
 
-        # Imprimo todas las partidas disponibles para el usuario
-        return render(request, 'mouse_cat/join_game.html',
-                      {'un_solo_jugador': un_solo_jugador})
+        # Show 5 games per page
+        paginator = Paginator(games_list, 5)
+        page = request.GET.get('page')
+        games = paginator.get_page(page)
+        return render(request, 'mouse_cat/join_game.html', {'games': games})
 
     # Este caso significa que el usuario ya me ha dicho a que partida se quiere unir
     elif request.method == 'GET' and int(tipo) == 2 and int(game_id) != -1:
@@ -569,14 +574,13 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         context_dict = {}
 
         if int(filter) == -1:
-            context_dict['finished_as_cat'] = finished_as_cat
-            context_dict['finished_as_mouse'] = finished_as_mouse
+            games_list = list(chain(finished_as_cat, finished_as_mouse))
 
         elif int(filter) == 1:
-            context_dict['finished_as_cat'] = finished_as_cat
+            games_list = finished_as_cat
 
         elif int(filter) == 2:
-            context_dict['finished_as_mouse'] = finished_as_mouse
+            games_list = finished_as_mouse
 
         # Tengo que ver qué partidas he ganado yo
         elif int(filter) == 4:
@@ -589,12 +593,15 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
                 if check_winner(game) == 2:
                     winner_mouse.append(game)
 
-            context_dict['finished_as_cat'] = winner_cat
-            context_dict['finished_as_mouse'] = winner_mouse
+            games_list = list(chain(winner_cat, winner_mouse))
 
-        return render(request, "mouse_cat/finished_games.html", context_dict)
+        # Show 5 games per page
+        paginator = Paginator(games_list, 5)
+        page = request.GET.get('page')
+        games = paginator.get_page(page)
+        return render(request, 'mouse_cat/finished_games.html', {'games': games})
 
-    # Entrar en modo reproduccion
+        # Entrar en modo reproduccion
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) != -1:
         # Almacenamos en la sesion el juego que se está reproduciendo
         request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID] = game_id

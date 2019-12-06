@@ -321,6 +321,8 @@ class Game(models.Model):
 
         return response
 
+    class Meta:
+        ordering = ['id']
 
 class Move(models.Model):
     """
@@ -437,6 +439,9 @@ class Move(models.Model):
 
         super(Move, self).save(*args, **kwargs)
         self.game.save()
+
+    class Meta:
+        ordering = ['id']
 
 
 class SingletonModel(models.Model):
