@@ -2,7 +2,7 @@
 
 {% block content %}
 <div id="content" class="old_ratonGato">
-    <h1>Signup user</h1>
+    <h1>Formulario de registro</h1>
     {% if user_form %}
         <form id="user_form" method="post" action="{% url 'signup' %}">
             {% csrf_token %}
@@ -10,7 +10,7 @@
             <input type="submit" name="submit" value="Register" />
         </form>
     {% else %}
-        <p>User successfully created</p>
+        <p>Usuario creado correctamente</p>
     {% endif %}
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>

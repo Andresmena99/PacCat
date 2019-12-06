@@ -23,6 +23,8 @@ urlpatterns = [
     path('join_game/', views.join_game_service, name='join_game'),
     url(r'^select_game/(?P<tipo>\d+)/$', views.select_game_service,
         name='select_game'),
+    url(r'^select_game/(?P<tipo>\d+)/(?P<filter>\d+)$', views.select_game_service,
+        name='select_game'),
     url(r'^select_game/(?P<tipo>\d+)/(?P<game_id>\d+)/$', views.select_game_service,
         name='select_game'),
     url(r'^select_game/(?P<tipo>\d+)/(?P<join>\d+)/$', views.select_game_service,

@@ -1838,3 +1838,76 @@ ol {
     padding: 5px;
     user-select: none;
 }
+
+/* Filter */
+
+.search {
+  text-align: center;
+}
+
+.search h1 {
+  font-family: 'Poiret One', cursive;
+  letter-spacing: 1rem;
+  font-size: 3rem;
+}
+
+.search a {
+  text-decoration: none;
+  color: black;
+  background: white;
+  opacity: 0.9;
+  padding: 0.5rem 1rem;
+  transition: all 0.4s;
+  border-radius: 5px;
+}
+
+.search a:hover {
+  background: #dddddd;
+}
+
+.filtro li {
+  width: 20rem;
+  position: relative;
+  display: inline-block;
+}
+
+.filtro li a {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: #353535;
+  text-decoration: none;
+}
+
+.filtro li a:hover {
+  transition: opacity 0.2s;
+}
+
+.categorias {
+  padding: 0;
+  position: absolute;
+  background: #1f2f50;
+  width: 100%;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+
+.categorias li a {
+  display: block;
+  background: none;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  margin: 0;
+  text-decoration: none;
+}
+
+.categorias li a:hover {
+  background: #24365c;
+}
+
+
+.filtro li:hover .categorias {
+  visibility: visible;
+  opacity: 1;
+}

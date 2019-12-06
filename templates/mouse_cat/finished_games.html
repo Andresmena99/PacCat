@@ -2,10 +2,21 @@
 
 {% block content %}
 <div id="content" class="old_ratonGato">
+    <div class="search">
+        <ul class="filtro">
+            <li><a href="#">Filtrar partidas</a>
+                <ul class="categorias">
+                    <li><a href="{% url 'select_game' tipo=3 %}">Sin filtro</a></li>
+                    <li><a href="{% url 'select_game' tipo=3 filter=1 %}">Finalizadas como gato</a></li>
+                    <li><a href="{% url 'select_game' tipo=3 filter=2 %}">Finalizadas como raton</a></li>
+                    <li><a href="{% url 'select_game' tipo=3 filter=4 %}">He ganado</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
     {% if not finished_as_cat and not finished_as_mouse %}
-        No has finalizado ninguna partida todavia
+        No has finalizado ninguna partida todavia, o ningun resultado que cumpla el filtro
     {% else %}
-
     <h1>Selecciona la partida para reproducir</h1>
     <div class=main-select>
         <table class=tabla-juegos>

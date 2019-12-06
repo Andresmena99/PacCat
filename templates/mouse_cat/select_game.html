@@ -2,8 +2,20 @@
 
 {% block content %}
 <div id="content" class="old_ratonGato">
+        <div class="search">
+        <ul class="filtro">
+            <li><a href="#">Filtrar partidas</a>
+                <ul class="categorias">
+                    <li><a href="{% url 'select_game' tipo=1 %}">Sin filtro</a></li>
+                    <li><a href="{% url 'select_game' tipo=1 filter=1 %}">Jugando como gato</a></li>
+                    <li><a href="{% url 'select_game' tipo=1 filter=2 %}">Jugando como raton</a></li>
+                    <li><a href="{% url 'select_game' tipo=1 filter=3 %}">Mi turno</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
     {% if not games_as_cat and not games_as_mouse %}
-        No hay partidas disponibles
+        No hay partidas disponibles, o ningun resultado que cumpla el filtro
     {% else %}
     <h1>Select game</h1>
     <div class=main-select>

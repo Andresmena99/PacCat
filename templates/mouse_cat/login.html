@@ -3,7 +3,7 @@
 {% block content %}
 <div id="content" class="old_ratonGato">
     <h1>Login</h1>
-    Log in to continue:
+    Inicia sesión para continuar:
     <form id="login_form" method="post" action="{% url 'login' %}">
         {% csrf_token %}
         {{ user_form.as_p }}<br/>

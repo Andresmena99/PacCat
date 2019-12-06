@@ -404,7 +404,7 @@ def join_game_service(request):
 
 
 @login_required
-def select_game_service(request, tipo=-1, game_id=-1):
+def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
     """
         Funcion que nos muestra todas las partidas existentes y nos permite
         comenzar a jugar en cualquiera de ellas con tan solo un click
@@ -413,11 +413,18 @@ def select_game_service(request, tipo=-1, game_id=-1):
         ----------
         request : HttpRequest
             Solicitud Http
-        type : int (default -1)
+        tipo : int (default -1)
             Tipo de servicio que queremos usar:
                 1: Mostrar partidas que estamos jugando
                 2: Mostrar partidas a las que nos podemos unir
                 3: Mostrar partidas para reproducir
+
+        filter: int (default -1)
+            Nos dice si tenemos que aplicar algun filtro a los resutlados que devolvemos
+                1: Partidas como gato
+                2: Partidas como raton
+                3: Partidas en las que es mi turno
+                4: Partidas que he ganado (solo para finished)
 
         game_id : int (default -1)
             Id de la partida seleccionada para jugar, por defecto a -1
@@ -431,6 +438,10 @@ def select_game_service(request, tipo=-1, game_id=-1):
         -------
             Eric Morales
     """
+    print("Tipo: " + str(tipo))
+    print("Filtro: " + str(filter))
+    print("game_id: " + str(game_id))
+
     # Esto significa que quiero ver las partidas que estoy jugando
     if request.method == 'GET' and int(tipo) == 1 and int(game_id) == -1:
         # Tengo que añadir un campo id a cada partida, para luego poder hacer
@@ -443,7 +454,23 @@ def select_game_service(request, tipo=-1, game_id=-1):
         mis_juegos_mouse = Game.objects.filter(status=GameStatus.ACTIVE,
                                                mouse_user=request.user)
 
-        context_dict = {'games_as_cat': mis_juegos_cat, 'games_as_mouse': mis_juegos_mouse}
+        context_dict = {}
+        if int(filter) == -1:
+            context_dict['games_as_cat'] = mis_juegos_cat
+            context_dict['games_as_mouse'] = mis_juegos_mouse
+
+        elif int(filter) == 1:
+            context_dict['games_as_cat'] = mis_juegos_cat
+
+        elif int(filter) == 2:
+            context_dict['games_as_mouse'] = mis_juegos_mouse
+
+        elif int(filter) == 3:
+            mis_juegos_cat = mis_juegos_cat.filter(cat_turn=True)
+            mis_juegos_mouse = mis_juegos_mouse.filter(cat_turn=False)
+            context_dict['games_as_cat'] = mis_juegos_cat
+            context_dict['games_as_mouse'] = mis_juegos_mouse
+
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
     # En este caso, significa que quiero jugar la partida
@@ -482,14 +509,26 @@ def select_game_service(request, tipo=-1, game_id=-1):
     # Quiero ver las partidas a las que me quiero unir
     elif request.method == 'GET' and int(tipo) == 2 and int(game_id) == -1:
         # Entre todas las partidas, miro las que solo tienen un jugador
-        one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
+
+        # En funcion de si tenemos aplicado o no el filtro, devuelve unas partidas de un jugador u otras
+        if int(filter) == -1:
+            one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
+
+        elif int(filter) == 1:
+            one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
+
+        # En la seleccion de partidas a las que unirte, no hay partidas como raton
+        # Nunca es nuestro turno tampoco
+        elif int(filter) == 2 or int(filter) == 3:
+            one_player = []
 
         # Tengo que dejar en las que el jugador no sea el propio mouse_user,
         # ya que un jugador no puede jugar contra si mismo
         un_solo_jugador = []
-        for partida in one_player.order_by('id'):
-            if partida.cat_user != request.user:
-                un_solo_jugador.append(partida)
+        if len(one_player) > 0:
+            for partida in one_player.order_by('id'):
+                if partida.cat_user != request.user:
+                    un_solo_jugador.append(partida)
 
         # Imprimo todas las partidas disponibles para el usuario
         return render(request, 'mouse_cat/join_game.html',
@@ -526,7 +565,32 @@ def select_game_service(request, tipo=-1, game_id=-1):
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) == -1:
         finished_as_cat = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
         finished_as_mouse = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
-        context_dict = {'finished_as_cat': finished_as_cat, 'finished_as_mouse': finished_as_mouse}
+
+        context_dict = {}
+
+        if int(filter) == -1:
+            context_dict['finished_as_cat'] = finished_as_cat
+            context_dict['finished_as_mouse'] = finished_as_mouse
+
+        elif int(filter) == 1:
+            context_dict['finished_as_cat'] = finished_as_cat
+
+        elif int(filter) == 2:
+            context_dict['finished_as_mouse'] = finished_as_mouse
+
+        # Tengo que ver qué partidas he ganado yo
+        elif int(filter) == 4:
+            winner_cat = []
+            winner_mouse = []
+            for game in finished_as_cat:
+                if check_winner(game) == 1:
+                    winner_cat.append(game)
+            for game in finished_as_mouse:
+                if check_winner(game) == 2:
+                    winner_mouse.append(game)
+
+            context_dict['finished_as_cat'] = winner_cat
+            context_dict['finished_as_mouse'] = winner_mouse
 
         return render(request, "mouse_cat/finished_games.html", context_dict)
 
