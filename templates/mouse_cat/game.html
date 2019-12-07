@@ -7,7 +7,7 @@
 
 <script type="text/javascript">
 
-    function getCookie(name) {
+function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         var cookies = document.cookie.split(';');
@@ -36,38 +36,38 @@ $.ajaxSetup({
     }
 });
 
-    $(document).ready(function () {
-        $('.drop').on('dragover', function(e){
-            e.preventDefault();
-        });
-        $('.drag').on('dragstart', function(e) {
-            e.originalEvent.dataTransfer.setData('object', e.target.id);
-        });
-        $('.drop').on('drop', function(e) {
-            e.preventDefault();
-            var data = e.originalEvent.dataTransfer.getData('object');
-            do_move(data, parseInt(e.target.id.split('_')[1], 10));
-            e.target.appendChild(document.getElementById(data));
-            $(this).off('dragover drop');
+$(document).ready(function () {
+    $('.drop').on('dragover', function(e){
+        e.preventDefault();
     });
+    $('.drag').on('dragstart', function(e) {
+        e.originalEvent.dataTransfer.setData('object', e.target.id);
     });
+    $('.drop').on('drop', function(e) {
+        e.preventDefault();
+        var data = e.originalEvent.dataTransfer.getData('object');
+        do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
+        e.target.appendChild(document.getElementById(data));
+        $(this).off('dragover drop');
+    });
+});
 
-    function do_move(o, t) {
-        alert(o);
-        alert(t);
-        $.post("{% url 'move' %}",
-            {
-                token: csrftoken,
-                origin: o,
-                target: t
-            },
-           function (response) {
-                // redirect must be defined and must be true
-                if (response.redirect !== undefined && response.redirect) {
-                    window.location.href = response.redirect_url;
-                }
-            });
+function do_move(o, t) {
+    $.ajax({
+    type: "POST",
+    url: '{% url 'move' %}',
+    token: csrftoken,
+    data: {
+        origin: o,
+        target: t,
+        action: 'post'
+    },
+    success: function (data) {
+        $( "#chess_div").html('').load("{% url 'create_only_board' game_id=game.id %}");
     }
+
+    });
+}
 </script>
 
 
@@ -107,43 +107,8 @@ $.ajaxSetup({
     </form>
     </div>
 
-    <div class="col-sm-8 text-left">
-      {% if board %}
-        {% static "" as baseUrl %}
-        <div class="chess_board">
-        {% for miniBoard in board %}
-            {% if forloop.counter0|divisibleby:2 %}
-                {% for item in miniBoard %}
-                    {% if forloop.counter0|divisibleby:2 %}
-                    <div id="cell_{{forloop.counter0}}" class="drop black" >
-                    {% else %}
-                    <div id="cell_{{forloop.counter0}}" class="drop white" >
-                    {% endif %}
-                        {% if item ==  -1 %}
-                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
-                        {% elif item == 1 or item == 2 or item == 3 or item == 4 %}
-                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            {% else %}
-                {% for item in miniBoard %}
-                    {% if forloop.counter0|divisibleby:2 %}
-                    <div id="cell_{{forloop.counter0}}" class="drop white" >
-                    {% else %}
-                    <div id="cell_{{forloop.counter0}}" class="drop black" >
-                    {% endif %}
-                        {% if item ==  -1 %}
-                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
-                        {% elif item == 1 or item == 2 or item == 3 or item == 4 %}
-                            <img class="drag square_image" id="{{forloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
-        </div>
-    {% endif %}
+    <div id="chess_div" class="col-sm-8 text-left">
+      {% include 'mouse_cat/board.html' %}
     </div>
     <div class="col-sm-2 sidenav derecha">
       <div class="well">

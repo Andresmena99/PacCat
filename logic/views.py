@@ -671,31 +671,38 @@ def move_service(request):
     """
 
     if request.method == 'POST':
-        # Nos mandan un formulario que contiene el movimento que se quiere
+        # Nos mandan un post que contiene el movimento que se quiere
         # realizar.
+
         try:
             # Sacamos la partida que se esta jugando de la sesión
             game = Game.objects.filter(id=request.session[
                 constants.GAME_SELECTED_SESSION_ID])[0]
-            form = MoveForm(request.POST)
-            if form.is_valid():
-                # Intentamos hacer el movimiento. En caso de que nos de una
-                # excepcion, significa que el moviemiento no estaba permitido
-                try:
-                    if game.cat_turn:
-                        Move.objects.create(
-                            game=game, player=game.cat_user,
-                            origin=form.cleaned_data['origin'],
-                            target=form.cleaned_data['target'])
+            print("he llegado aqui")
+            # Intentamos hacer el movimiento. En caso de que nos de una
+            # excepcion, significa que el moviemiento no estaba permitido
+            try:
+                if game.cat_turn:
+                    print("he llegado aqui1")
+                    Move.objects.create(
+                        game=game, player=game.cat_user,
+                        origin=int(request.POST.get('origin')),
+                        target=int(request.POST.get('target')))
 
-                    else:
-                        Move.objects.create(
-                            game=game, player=game.mouse_user,
-                            origin=form.cleaned_data['origin'],
-                            target=form.cleaned_data['target'])
-                except ValidationError:
-                    # Añadimos el error del movimiento al formulario
-                    form.add_error(None, constants.MSG_ERROR_MOVE)
+                else:
+                    print("he llegado aqui2")
+                    print(request.POST.get('origin'))
+                    print(request.POST.get('target'))
+                    Move.objects.create(
+                        game=game, player=game.mouse_user,
+                        origin=int(request.POST.get('origin')),
+                        target=int(request.POST.get('target')))
+                    print("done")
+            except ValidationError:
+                print("he llegado aqui tambien")
+                # Añadimos el error del movimiento al formulario
+                return create_board(request, game)
+                # Revisar esto deberia devolver error
 
             # Hacemos una comprobacion de si la partida tiene que finalizar
             # por si ha ganado el raton o el gato
@@ -713,7 +720,7 @@ def move_service(request):
 
             # Generamos de nuevo el tablero, pero se manda un formulario que
             # puede contener el error en el movimiento
-            return create_board(request, game, form)
+            return create_board(request, game)
 
         # Si intentamos sacar un id de un juego que no existe, nos dará
         # este error
@@ -855,17 +862,6 @@ def create_board(request, game, form=None):
             Eric Morales
     """
 
-    def getChessColor(pos):
-        if (pos // 8) % 2 == 0:
-            if pos % 2 != 0:
-                return "white"
-            else:
-                return "black"
-        else:
-            if pos % 2 == 0:
-                return "black"
-        return "white"
-
     # Creamos el array que representa el tablero
     if game is not None:
         # Creamos el tablero
@@ -884,6 +880,50 @@ def create_board(request, game, form=None):
         return render(request, 'mouse_cat/game.html',
                       {'game': game, 'board': board,
                        'move_form': MoveForm()})
+
+
+def create_only_board(request, game_id=-1):
+    """
+        Funcion que devuelve el tablero de la partida pasada como parámetro,
+        devolviendo además los errores correspondientes, si los hay
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+        game : Game
+            Partida correspondiente
+        form : Form (default None)
+            Formulario que contiene los errores correspondientes al ultimo
+            movimiento que se ha intentado realizar
+
+        Returns
+        -------
+        Html : archivo html con el resultado del movimiento, ya sea el
+        tablero actualizado, el final del juego o un error.
+
+        Author
+        -------
+            Eric Morales
+            :param game_id:
+    """
+
+    game = Game.objects.filter(id=game_id)
+
+    # No hay ninguna partida con el id
+    if len(game) == 0:
+        return errorHTTP(request,
+                         constants.ERROR_SELECTED_GAME_NOT_EXISTS)
+
+    game = game[0]
+
+    # Creamos el array que representa el tablero
+    if game is not None:
+        # Creamos el tablero
+        board = create_board_from_game(game)
+        return render(request, 'mouse_cat/board.html',
+                      {'board': board})
+
 
 # Funcion que simplemente devuelve el tablero en funcion del estado de la partida
 def create_board_from_game(game):
