@@ -39,5 +39,7 @@ urlpatterns = [
         name='reproduce_game'),
     url(r'^create_only_board/(?P<game_id>\d+)/$', views.create_only_board,
         name='create_only_board'),
+    url(r'^turn/(?P<game_id>\d+)/$', views.turn,
+        name='turn'),
     path('reproduce_game/', views.reproduce_game_service, name='reproduce_game'),
 ]

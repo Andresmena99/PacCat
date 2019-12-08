@@ -6,6 +6,7 @@
         Andrés Mena
         Eric Morales
 """
+import json
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -923,6 +924,28 @@ def create_only_board(request, game_id=-1):
         board = create_board_from_game(game)
         return render(request, 'mouse_cat/board.html',
                       {'board': board})
+
+
+@csrf_exempt
+def turn(request, game_id=-1):
+    """
+        REVISAR
+    """
+
+    game = Game.objects.filter(id=game_id)
+
+    # No hay ninguna partida con el id
+    if len(game) == 0:
+        return HttpResponse(json.dumps({'turn': -1}),
+                            content_type="application/json")
+    game = game[0]
+
+    if game is not None:
+        return HttpResponse(json.dumps({'turn': game.cat_turn}),
+                            content_type="application/json")
+
+    return HttpResponse(json.dumps({'turn': -1}),
+                        content_type="application/json")
 
 
 # Funcion que simplemente devuelve el tablero en funcion del estado de la partida

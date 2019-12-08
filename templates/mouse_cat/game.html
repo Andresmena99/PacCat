@@ -47,24 +47,22 @@ $(document).ready(function () {
         e.preventDefault();
         var board = {{board}};
         var data = e.originalEvent.dataTransfer.getData('object');
-        if ("{{game.mouse_user.id}}" == "{{request.user.id}}") {
+        if ("{{game.mouse_user.id}}" == "{{request.user.id}}" && "{{game.cat_turn}}" == "False") {
             if (board[parseInt(data.split('_')[1], 10)][parseInt(data.split('_')[0], 10)] == -1){
                 do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
                 e.target.appendChild(document.getElementById(data));
                 $(this).off('dragover drop');
             }
         } else {
-            if ([1,2,3,4].includes(board[parseInt(data.split('_')[0], 10)][parseInt(data.split('_')[1], 10)])) {
+            if ([1,2,3,4].includes(board[parseInt(data.split('_')[1], 10)][parseInt(data.split('_')[0], 10)]) && "{{game.cat_turn}}" == "True") {
                 do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
                 e.target.appendChild(document.getElementById(data));
                 $(this).off('dragover drop');
             }
         }
-
-
     });
 });
-
+var loopTurn;
 function do_move(o, t) {
     $.ajax({
     type: "POST",
@@ -77,11 +75,32 @@ function do_move(o, t) {
     },
     success: function (data) {
         $( "#chess_div").html('').load("{% url 'create_only_board' game_id=game.id %}");
-
+        loopTurn = setInterval(checkTurn,2000);
+        $( "#waiting").css("visibility", "visible");
     }
-
     });
 }
+
+
+function checkTurn(){
+        $.ajax({
+            url: '{% url 'turn' game_id=game.id %}',
+            token: csrftoken,
+            type: 'post',
+            success: function(response){
+                if (response.turn == false && "{{game.mouse_user.id}}" == "{{request.user.id}}"){
+                    clearInterval(loopTurn);
+                    $( "#waiting").css("visibility", "hidden");
+                }
+                else if (response.turn == true && "{{game.mouse_user.id}}" != "{{request.user.id}}")
+                {
+                    clearInterval(loopTurn);
+                    $( "#waiting").css("visibility", "hidden");
+                }
+            }
+        });
+    }
+
 </script>
 
 
@@ -92,31 +111,16 @@ function do_move(o, t) {
         {% csrf_token %}
         <p>
             Cat: <b>{{ game.cat_user.username }}</b>
-            {% if game.cat_user.id == request.user.id %}
                 <blockquote class="cat">
                     {% if game.cat_turn %}
                         Turno del gato
                     {% else %}
-
+                        Turno del raton
                     {% endif %}
                 </blockquote>
-            {% endif %}
-        </p>
-        <p>
-
-            {% if game.mouse_user.id == request.user.id %}
-                <blockquote class="mouse">
-                    {% if not game.cat_turn %}
-                        {{ move_form }}
-                        <input type="submit" value="Move" />
-                    {% else %}
-                        Waiting for the cat...
-                        <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
-                    {% endif %}
-                </blockquote>
-            {% endif %}
         </p>
     </form>
+        <div id="waiting" style="visibility: hidden">waiting...</div>
     </div>
 
     <div id="chess_div" class="col-sm-8 text-left">
@@ -128,7 +132,6 @@ function do_move(o, t) {
       </div>
     </div>
   </div>
-    <p>Game: <b>{{ game.id }}</b></p>
 </div>
 
 {% endblock content %}
