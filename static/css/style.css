@@ -1785,6 +1785,10 @@ ol {
 	text-align: center;
 }
 
+.old_ratonGato a {
+	color: #A637A4 !important;
+}
+
 .old_ratonGato p {
 	color: #dddde7;
 }
@@ -1858,7 +1862,7 @@ ol {
 
 .search a {
   text-decoration: none;
-  color: black;
+  color: black!important;
   background: white;
   opacity: 0.9;
   padding: 0.5rem 1rem;
@@ -1879,7 +1883,7 @@ ol {
 .filtro li a {
   display: block;
   padding: 0.5rem 1rem;
-  color: #353535;
+  color: #353535!important;
   text-decoration: none;
 }
 
@@ -1902,7 +1906,7 @@ ol {
   display: block;
   background: none;
   padding: 0.5rem 1rem;
-  color: #fff;
+  color: #fff!important;
   margin: 0;
   text-decoration: none;
 }

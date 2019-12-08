@@ -45,10 +45,23 @@ $(document).ready(function () {
     });
     $('.drop').on('drop', function(e) {
         e.preventDefault();
+        var board = {{board}};
         var data = e.originalEvent.dataTransfer.getData('object');
-        do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
-        e.target.appendChild(document.getElementById(data));
-        $(this).off('dragover drop');
+        if ("{{game.mouse_user.id}}" == "{{request.user.id}}") {
+            if (board[parseInt(data.split('_')[1], 10)][parseInt(data.split('_')[0], 10)] == -1){
+                do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
+                e.target.appendChild(document.getElementById(data));
+                $(this).off('dragover drop');
+            }
+        } else {
+            if ([1,2,3,4].includes(board[parseInt(data.split('_')[0], 10)][parseInt(data.split('_')[1], 10)])) {
+                do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
+                e.target.appendChild(document.getElementById(data));
+                $(this).off('dragover drop');
+            }
+        }
+
+
     });
 });
 
@@ -64,6 +77,7 @@ function do_move(o, t) {
     },
     success: function (data) {
         $( "#chess_div").html('').load("{% url 'create_only_board' game_id=game.id %}");
+
     }
 
     });
@@ -81,11 +95,9 @@ function do_move(o, t) {
             {% if game.cat_user.id == request.user.id %}
                 <blockquote class="cat">
                     {% if game.cat_turn %}
-                        {{ move_form }}
-                        <input type="submit" value="Move" />
+                        Turno del gato
                     {% else %}
-                        Waiting for the mouse...
-                        <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
+
                     {% endif %}
                 </blockquote>
             {% endif %}
