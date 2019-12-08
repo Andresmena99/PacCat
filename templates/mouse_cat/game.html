@@ -36,32 +36,34 @@ $.ajaxSetup({
     }
 });
 
-$(document).ready(function () {
-    $('.drop').on('dragover', function(e){
+$(document).ready(addDragDrop);
+
+function addDragDrop() {
+    $(document).on('dragover','.drop', function(e){
         e.preventDefault();
     });
-    $('.drag').on('dragstart', function(e) {
+    $(document).on('dragstart','.drag', function(e){
         e.originalEvent.dataTransfer.setData('object', e.target.id);
     });
-    $('.drop').on('drop', function(e) {
+    $(document).on('drop','.drop', function(e){
         e.preventDefault();
         var board = {{board}};
         var data = e.originalEvent.dataTransfer.getData('object');
-        if ("{{game.mouse_user.id}}" == "{{request.user.id}}" && "{{game.cat_turn}}" == "False") {
+        if ("{{game.mouse_user.id}}" == "{{request.user.id}}") {
             if (board[parseInt(data.split('_')[1], 10)][parseInt(data.split('_')[0], 10)] == -1){
                 do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
                 e.target.appendChild(document.getElementById(data));
                 $(this).off('dragover drop');
             }
         } else {
-            if ([1,2,3,4].includes(board[parseInt(data.split('_')[1], 10)][parseInt(data.split('_')[0], 10)]) && "{{game.cat_turn}}" == "True") {
+            if ([1,2,3,4].includes(board[parseInt(data.split('_')[1], 10)][parseInt(data.split('_')[0], 10)])) {
                 do_move(parseInt(data.split('_')[0], 10) +parseInt(data.split('_')[1], 10)*8, parseInt(e.target.id.split('_')[1], 10) +parseInt(e.target.id.split('_')[2], 10)*8);
                 e.target.appendChild(document.getElementById(data));
                 $(this).off('dragover drop');
             }
         }
     });
-});
+}
 var loopTurn;
 function do_move(o, t) {
     $.ajax({
@@ -77,6 +79,16 @@ function do_move(o, t) {
         $( "#chess_div").html('').load("{% url 'create_only_board' game_id=game.id %}");
         loopTurn = setInterval(checkTurn,2000);
         $( "#waiting").css("visibility", "visible");
+        if ("{{game.mouse_user.id}}" == "{{request.user.id}}")
+        {
+            $( "#mouse_turn").css("visibility", "hidden");
+            $( "#cat_turn").css("visibility", "visible");
+        }
+        else if ("{{game.mouse_user.id}}" != "{{request.user.id}}")
+        {
+            $( "#cat_turn").css("visibility", "hidden");
+            $( "#mouse_turn").css("visibility", "visible");
+        }
     }
     });
 }
@@ -88,14 +100,21 @@ function checkTurn(){
             token: csrftoken,
             type: 'post',
             success: function(response){
-                if (response.turn == false && "{{game.mouse_user.id}}" == "{{request.user.id}}"){
+                if (response.turn == false && "{{game.mouse_user.id}}" == "{{request.user.id}}")
+                {
                     clearInterval(loopTurn);
+                    location.reload(true);
                     $( "#waiting").css("visibility", "hidden");
+                    $( "#mouse_turn").css("visibility", "visible");
+                    $( "#cat_turn").css("visibility", "hidden");
                 }
                 else if (response.turn == true && "{{game.mouse_user.id}}" != "{{request.user.id}}")
                 {
                     clearInterval(loopTurn);
+                    location.reload(true);
                     $( "#waiting").css("visibility", "hidden");
+                    $( "#cat_turn").css("visibility", "visible");
+                    $( "#mouse_turn").css("visibility", "hidden");
                 }
             }
         });
@@ -105,22 +124,30 @@ function checkTurn(){
 
 
 <div class="container-fluid text-center old_ratonGato">
+
   <div class="row content">
     <div class="col-sm-2 sidenav izquierda">
-      <form id="move_form" method="post" action="{% url 'move' %}">
-        {% csrf_token %}
-        <p>
-            Cat: <b>{{ game.cat_user.username }}</b>
-                <blockquote class="cat">
-                    {% if game.cat_turn %}
-                        Turno del gato
-                    {% else %}
-                        Turno del raton
-                    {% endif %}
-                </blockquote>
-        </p>
-    </form>
-        <div id="waiting" style="visibility: hidden">waiting...</div>
+        Gato: <b>{{ game.cat_user.username }}</b>
+        {% if game.cat_turn %}
+            <div id="cat_turn" style="visibility: visible">TURNO DEL GATO</div>
+        {% else %}
+            <div id="cat_turn" style="visibility: hidden">TURNO DEL GATO</div>
+        {% endif %}
+        {% if game.mouse_user.id == request.user.id %}
+            <div id="waiting" style="visibility: hidden">
+                WAITING...
+                <div class="gooey">
+                  <span class="dot"></span>
+                  <div class="dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+            </div>
+        {% endif %}
+
+
     </div>
 
     <div id="chess_div" class="col-sm-8 text-left">
@@ -128,10 +155,27 @@ function checkTurn(){
     </div>
     <div class="col-sm-2 sidenav derecha">
       <div class="well">
-        Mouse: <b>{{ game.mouse_user.username }}</b>
+        Raton: <b>{{ game.mouse_user.username }}</b>
+            {% if game.cat_turn %}
+                <div id="mouse_turn" style="visibility: hidden">TURNO DEL RATON</div>
+            {% else %}
+                <div id="mouse_turn" style="visibility: visible">TURNO DEL RATON</div>
+            {% endif %}
+          {% if game.mouse_user.id != request.user.id %}
+            <div id="waiting" style="visibility: hidden">
+                WAITING...
+                <div class="gooey">
+                  <span class="dot"></span>
+                  <div class="dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+            </div>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
-
 {% endblock content %}
