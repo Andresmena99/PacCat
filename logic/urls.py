@@ -31,7 +31,10 @@ urlpatterns = [
         name='select_game'),
     url(r'^select_game/', views.select_game_service, name='select_game'),
     path('play/', views.show_game_service, name='show_game'),
+
+    # REVISAR: Esto puede ser lioso, el nombre de move_service nos lo ha dicho el enunciado...
     path('move/', views.move_service, name='move'),
+    path('move_service/', views.get_move_service, name='move_service'),
 
     url(r'^finished_games/', views.finished_games, name='finished_games'),
 

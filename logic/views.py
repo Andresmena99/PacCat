@@ -987,16 +987,19 @@ def create_initial_board():
 
 
 # Esta funcion nos devuelve el json que nos pide el enunciado,
-def get_move_service(request, shift):
-    print("\n")
-    print(request.session[constants.GAME_SELECTED_MOVE_NUMBER])
-    print("\n")
-
+@csrf_exempt
+def get_move_service(request):
     game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
     if len(game) == 0:
         return HttpResponse("ERROR")
 
     game = game[0]
+
+    # Sacamos el parametro recibido por metodo post
+    shift = int(request.POST.get('shift'))
+    print("\nESTE ES EL SHIFT: "+str(shift))
+    print("\nESTE ES EL MOVE NUMBER: "+str(request.session[constants.GAME_SELECTED_MOVE_NUMBER])+"\n")
+
 
     moves = Move.objects.filter(game=game).order_by('id')
     move_number = request.session[constants.GAME_SELECTED_MOVE_NUMBER]
@@ -1029,4 +1032,8 @@ def get_move_service(request, shift):
         request.session[constants.GAME_SELECTED_MOVE_NUMBER] -= 1
 
     print(json_dict)
+    return HttpResponse(json.dumps(json_dict),
+                        content_type="application/json")
+
+    #REVISAR
     return json_dict

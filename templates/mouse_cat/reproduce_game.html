@@ -1,14 +1,101 @@
 {% extends "mouse_cat/base.html" %}
 
 {% block content %}
-<!--
+
 <script type="text/javascript">
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+
     function play(){
-        alert ("ola");
+        var j=-1;
+        for(i = 0; i < document.getElementsByName("Movimiento").length; i++) {
+            if(document.getElementsByName("Movimiento")[i].checked) {
+                j=i;
+            }
+        }
+
+        if (j === -1) {
+            alert("No checks");
+            return false;
+        } else {
+            if (j === 0){
+                do_step(1);
+                return false;
+            }
+            else if(j === 1){
+                do_step(-1);
+                return false;
+            }
+            else if (j === 2){
+                alert("play");
+                return false;
+            }
+        }
+
         return false;
     }
+
+function do_step(i) {
+    /*El parametro i puede ser 1 (avanazo 1 movimiento) o -1 (retrocedo)*/
+    $.ajax({
+    type: "POST",
+    url: '{% url 'move_service' %}',
+    token: csrftoken,
+    data: {
+        shift: i,
+        action: 'post'
+    },
+    success: function (response) {
+        aux = "{{board}}";
+        /* Pasamos el tablero a modo array (si no es un string)*/
+        var array = JSON.parse(aux);
+
+        /* Sacamos las coordenadas buenas*/
+        var origin_x = response.origin % 8;
+        var origin_y = Math.trunc(response.origin/8);
+        var target_x = response.target % 8;
+        var target_y = Math.trunc(response.target/8);
+
+        /*Cambiamos al jugador de sitio*/
+        var personaje = array[origin_y][origin_x];
+        array[origin_y][origin_x] = 0;
+        array[target_y][target_x] = personaje;
+        alert(array);
+
+        /*ESTA ES LA IDEA DE LO QUE QUIERO HACER*/
+        "{{board}}" = array;
+    }
+    });
+    }
 </script>
--->
+
 
 <div id="content" class="old_ratonGato">
     <h1>Game: {{ game.id }}</h1>
@@ -25,7 +112,7 @@
     </div>
     {% endif %}
 
-        <form action="{% url 'reproduce_game' %}" method="POST">
+        <form action="{% url 'reproduce_game' %}" method="POST" onsubmit="return play()">
         {% csrf_token %}
         <label><b>Movimiento: </b></label>
 
@@ -38,7 +125,7 @@
         <label>Play</label>
         <input name="Movimiento" type="radio" value="3">
 
-        <button type="submit" onsubmit="return play"><b>Send</b></button>
+        <button type="submit"><b>Send</b></button>
         </form>
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>
