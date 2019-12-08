@@ -1,6 +1,15 @@
 {% extends "mouse_cat/base.html" %}
 
 {% block content %}
+<!--
+<script type="text/javascript">
+    function play(){
+        alert ("ola");
+        return false;
+    }
+</script>
+-->
+
 <div id="content" class="old_ratonGato">
     <h1>Game: {{ game.id }}</h1>
 
@@ -11,19 +20,11 @@
     {% endif %}
 
     {% if board %}
-        <p>Board: {{ board }}</p>
-        <table id="chess_board">
-        {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
-            <td id="cell_{{ forloop.counter0}}" style='width:20px;border:1px solid #000000;text-align:center;'>
-                {% if item ==  0 %}   x
-                {% elif item == 1 %}  &#9922;
-                {% else %}  &#9920; {% endif %}
-            </td>
-            {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
-        {% endfor %}
-        </table>
+    <div id="chess_div" class="">
+      {% include 'mouse_cat/board.html' %}
+    </div>
     {% endif %}
+
         <form action="{% url 'reproduce_game' %}" method="POST">
         {% csrf_token %}
         <label><b>Movimiento: </b></label>
@@ -37,7 +38,7 @@
         <label>Play</label>
         <input name="Movimiento" type="radio" value="3">
 
-        <button type="submit"><b>Send</b></button>
+        <button type="submit" onsubmit="return play"><b>Send</b></button>
         </form>
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>

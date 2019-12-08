@@ -644,7 +644,7 @@ def show_game_service(request):
         return create_board(request, game)
     except KeyError:
         return render(request, "mouse_cat/error.html",
-                      {'msg_error': "No game selected"})
+                      {'msg_error': "No se ha seleccionado ninguna partida"})
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -789,10 +789,20 @@ def reproduce_game_service(request):
 
         # Una vez tenemos el diccionario de json, ya podemos imprimir el tablero con el movimiento hecho.
         # El tablero lo habiamos almacenado en la sesion
-        board = request.session[constants.GAME_REPRODUCE_BOARD]
-        cat_origin = board[json_dict['origin']]
-        board[json_dict['origin']] = 0
-        board[json_dict['target']] = cat_origin
+        board_aux = request.session[constants.GAME_REPRODUCE_BOARD]
+        board_new = []
+        for arr in board_aux:
+            for i in arr:
+                board_new.append(i)
+        print(board_new)
+        cat_origin = board_new[json_dict['origin']]
+        board_new[json_dict['origin']] = 0
+        board_new[json_dict['target']] = cat_origin
+
+        board = []
+        for c in range(0, 64, 8):
+            board.append(board_new[c: c + 8])
+
         request.session[constants.GAME_REPRODUCE_BOARD] = board
 
         context_dict = {'game': game, 'board': board}
@@ -822,15 +832,11 @@ def reproduce_game_service(request):
     # Coloco el tablero en la posicion inicial
     if request.method == "GET":
         # Ponemos a 0 el movimiento por le que vamos reproduciendo
+
         request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
 
         # Creo un tablero con los gatos en las posiciones iniciales
-        board = [0] * 64
-        board[0] = 1
-        board[2] = 2
-        board[4] = 3
-        board[6] = 4
-        board[59] = -1
+        board = create_initial_board()
         request.session[constants.GAME_REPRODUCE_BOARD] = board
 
         context_dict = {'game': game, 'board': board}
@@ -961,12 +967,31 @@ def create_board_from_game(game):
 
     newBoard = []
     for c in range(0, 64, 8):
-        newBoard.append(board[c: c+8])
+        newBoard.append(board[c: c + 8])
+    return newBoard
+
+
+# Funcion que crea un tablero vacio
+def create_initial_board():
+    board = [0] * 64
+    board[0] = 1
+    board[2] = 2
+    board[4] = 3
+    board[6] = 4
+    board[59] = -1
+
+    newBoard = []
+    for c in range(0, 64, 8):
+        newBoard.append(board[c: c + 8])
     return newBoard
 
 
 # Esta funcion nos devuelve el json que nos pide el enunciado,
 def get_move_service(request, shift):
+    print("\n")
+    print(request.session[constants.GAME_SELECTED_MOVE_NUMBER])
+    print("\n")
+
     game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
     if len(game) == 0:
         return HttpResponse("ERROR")
