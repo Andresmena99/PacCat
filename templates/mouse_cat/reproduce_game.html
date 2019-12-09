@@ -105,7 +105,6 @@ function do_step(i) {
         else{
             /*Ponemos los botones en visibles o ocultos en función de hay movimiento disponible o no*/
             if (response.previous === 0){
-                // document.getElementById("previous_button").style.visibility="hidden";
                 $("#previous_button").fadeOut();
             }
 
@@ -143,7 +142,15 @@ function do_step(i) {
         /*Mandamos el array a la funcion para que cree el tablero*/
         var temp = "{% url 'create_board_array' %}";
         var final = temp + "?positions=" + array;
+
         $( "#chess_div").html('').load(final);
+
+        /* REVISAR: Esto es usando fade in y fade out, pero va igual de mal
+/*        $("#chess_div").fadeOut(0, function () {
+            $("#chess_div").html('').load(final, function () {
+                $("#chess_div").fadeIn('fast');
+        });});*/
+
     }
     });
     }
