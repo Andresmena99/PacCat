@@ -440,10 +440,6 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         -------
             Eric Morales
     """
-    print("Tipo: " + str(tipo))
-    print("Filtro: " + str(filter))
-    print("game_id: " + str(game_id))
-
     # Esto significa que quiero ver las partidas que estoy jugando
     if request.method == 'GET' and int(tipo) == 1 and int(game_id) == -1:
         # Tengo que añadir un campo id a cada partida, para luego poder hacer
@@ -547,9 +543,6 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         game = Game.objects.filter(id=game_id)
         if len(game) > 0:
             game = game[0]
-            print(game)
-            print(game.status != GameStatus.ACTIVE)
-            print(game.mouse_user is None)
             if game.status != GameStatus.CREATED or game.mouse_user is not None:
                 return render(request, 'mouse_cat/join_game.html',
                               {'msg_error': constants.ERROR_SELECTED_GAME_NOT_AVAILABLE})
@@ -679,28 +672,21 @@ def move_service(request):
             # Sacamos la partida que se esta jugando de la sesión
             game = Game.objects.filter(id=request.session[
                 constants.GAME_SELECTED_SESSION_ID])[0]
-            print("he llegado aqui")
             # Intentamos hacer el movimiento. En caso de que nos de una
             # excepcion, significa que el moviemiento no estaba permitido
             try:
                 if game.cat_turn:
-                    print("he llegado aqui1")
                     Move.objects.create(
                         game=game, player=game.cat_user,
                         origin=int(request.POST.get('origin')),
                         target=int(request.POST.get('target')))
 
                 else:
-                    print("he llegado aqui2")
-                    print(request.POST.get('origin'))
-                    print(request.POST.get('target'))
                     Move.objects.create(
                         game=game, player=game.mouse_user,
                         origin=int(request.POST.get('origin')),
                         target=int(request.POST.get('target')))
-                    print("done")
             except ValidationError:
-                print("he llegado aqui tambien")
                 # Añadimos el error del movimiento al formulario
                 return create_board(request, game)
                 # Revisar esto deberia devolver error
@@ -780,55 +766,6 @@ def reproduce_game_service(request):
         return errorHTTP(request,
                          constants.ERROR_NOT_ALLOWED_TO_REPRODUCE)
 
-    # Esto es cuando nos mandan un formulario de movimiento
-    if request.method == "POST":
-        # Esto esta "mal", el enunciado no quiere que lo programemos asi...
-        print("----------------")
-        move = int(request.POST.get("Movimiento"))
-        json_dict = get_move_service(request, move)
-
-        # Una vez tenemos el diccionario de json, ya podemos imprimir el tablero con el movimiento hecho.
-        # El tablero lo habiamos almacenado en la sesion
-        board_aux = request.session[constants.GAME_REPRODUCE_BOARD]
-        board_new = []
-        for arr in board_aux:
-            for i in arr:
-                board_new.append(i)
-        print(board_new)
-        cat_origin = board_new[json_dict['origin']]
-        board_new[json_dict['origin']] = 0
-        board_new[json_dict['target']] = cat_origin
-
-        board = []
-        for c in range(0, 64, 8):
-            board.append(board_new[c: c + 8])
-
-        request.session[constants.GAME_REPRODUCE_BOARD] = board
-
-        context_dict = {'game': game, 'board': board}
-
-        # Si no hay mas movimientos, significa que ha terminado. Felicitamos al ganador
-        if json_dict['next'] == 0:
-            winner = check_winner(game)
-
-            # Felicitamos al usuario que ha ganado
-            if winner == 1:
-                if request.user == game.cat_user:
-                    msg = "Cats. Enhorabuena " + str(request.user)
-                    context_dict['winner'] = msg
-                else:
-                    msg = "Cats. Sigue practicando " + str(request.user)
-                    context_dict['winner'] = msg
-            if winner == 2:
-                if request.user == game.mouse_user:
-                    msg = "Mouse. Enhorabuena " + str(request.user)
-                    context_dict['winner'] = msg
-                else:
-                    msg = "Mouse. Sigue practicando " + str(request.user)
-                    context_dict['winner'] = msg
-
-        return render(request, 'mouse_cat/reproduce_game.html', context_dict)
-
     # Coloco el tablero en la posicion inicial
     if request.method == "GET":
         # Ponemos a 0 el movimiento por le que vamos reproduciendo
@@ -837,9 +774,25 @@ def reproduce_game_service(request):
 
         # Creo un tablero con los gatos en las posiciones iniciales
         board = create_initial_board()
-        request.session[constants.GAME_REPRODUCE_BOARD] = board
-
         context_dict = {'game': game, 'board': board}
+
+        # Dejamos un mensaje de quien es el ganador por si reproduce la partida entera
+
+        winner = check_winner(game)
+        if winner == 1:
+            if request.user == game.cat_user:
+                msg = constants.CAT_WINNER + ". Enhorabuena " + str(request.user)
+                context_dict['winner'] = msg
+            else:
+                msg = constants.CAT_WINNER + ". Sigue practicando " + str(request.user)
+                context_dict['winner'] = msg
+        if winner == 2:
+            if request.user == game.mouse_user:
+                msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(request.user)
+                context_dict['winner'] = msg
+            else:
+                msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(request.user)
+                context_dict['winner'] = msg
 
         return render(request, 'mouse_cat/reproduce_game.html', context_dict)
 
@@ -997,43 +950,68 @@ def get_move_service(request):
 
     # Sacamos el parametro recibido por metodo post
     shift = int(request.POST.get('shift'))
-    print("\nESTE ES EL SHIFT: "+str(shift))
-    print("\nESTE ES EL MOVE NUMBER: "+str(request.session[constants.GAME_SELECTED_MOVE_NUMBER])+"\n")
-
 
     moves = Move.objects.filter(game=game).order_by('id')
     move_number = request.session[constants.GAME_SELECTED_MOVE_NUMBER]
     if shift == -1:
         move_number -= 1
 
-    # En move number tenemos el indice movimiento que queremos realizar de moves
-    if move_number < 0 or move_number >= len(moves):
-        print("ERROR EL MOVIMIENTO ESTA FUERA DE INDICE")
-        return HttpResponse("ERROR mirar terminal")
-
-    real_move = moves[move_number]
-
-    # En el diccionario, los campos previous y next se identifican con 1 (true)
-    # y 0 (false)
     json_dict = {}
-    if shift == 1:
-        json_dict['origin'] = real_move.origin
-        json_dict['target'] = real_move.target
-    else:
-        json_dict['origin'] = real_move.target
-        json_dict['target'] = real_move.origin
 
-    json_dict['previous'] = 1 if move_number > 0 else 0
-    json_dict['next'] = 1 if move_number < len(moves) - 1 else 0
+    # Tengo que devolver un json con previous a 0 si move_number < 0 (resto de campos irrelevantes, no se van a usar)
+    if move_number < 0:
+        json_dict['origin'] = 0
+        json_dict['target'] = 0
+        json_dict['previous'] = 0
+        json_dict['next'] = 0
+
+    else:
+        if move_number < len(moves):
+            real_move = moves[move_number]
+
+            # En el diccionario, los campos previous y next se identifican con 1 (true)
+            # y 0 (false)
+            if shift == 1:
+                json_dict['origin'] = real_move.origin
+                json_dict['target'] = real_move.target
+            else:
+                json_dict['origin'] = real_move.target
+                json_dict['target'] = real_move.origin
+
+            json_dict['previous'] = 1 if move_number > 0 or shift == 1 else 0
+            json_dict['next'] = 1 if move_number < len(moves) - 1 else 0
+
+        else:
+            json_dict['origin'] = 0
+            json_dict['target'] = 0
+            json_dict['previous'] = 0
+            json_dict['next'] = 0
 
     if shift == 1:
         request.session[constants.GAME_SELECTED_MOVE_NUMBER] += 1
     elif shift == -1:
         request.session[constants.GAME_SELECTED_MOVE_NUMBER] -= 1
+        if request.session[constants.GAME_SELECTED_MOVE_NUMBER] < 0:
+            request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
 
     print(json_dict)
+
+    # Cuando se acaban los movimientos (campo next == 0), se añade un campo al diccionario con el gana
+
     return HttpResponse(json.dumps(json_dict),
                         content_type="application/json")
 
-    #REVISAR
-    return json_dict
+
+def create_board_array(request):
+    array = request.GET['positions']
+    numbers = array.split(',')
+    board = []
+    for number in numbers:
+        board.append(int(number))
+
+    newBoard = []
+    for c in range(0, 64, 8):
+        newBoard.append(board[c: c + 8])
+
+    return render(request, 'mouse_cat/board.html',
+                  {'board': newBoard})
