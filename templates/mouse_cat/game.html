@@ -123,11 +123,23 @@ function checkTurn(){
 </script>
 
 
+
 <div class="container-fluid text-center old_ratonGato">
 
   <div class="row content">
     <div class="col-sm-2 sidenav izquierda">
-        Gato: <b>{{ game.cat_user.username }}</b>
+       <span style="text-align: center">
+
+        {% if request.user == game.cat_user %}
+            Tu:
+        {% else %}
+            Rival:
+        {% endif %}
+        <b>{{ game.cat_user.username }}</b>
+
+        </span>
+
+
         {% if game.cat_turn %}
             <div id="cat_turn" style="visibility: visible">TURNO DEL GATO</div>
         {% else %}
@@ -155,8 +167,17 @@ function checkTurn(){
     </div>
     <div class="col-sm-2 sidenav derecha">
       <div class="well">
-        Raton: <b>{{ game.mouse_user.username }}</b>
-            {% if game.cat_turn %}
+           <span style="text-align: center">
+
+            {% if request.user == game.mouse_user %}
+                Tu:
+            {% else %}
+                Rival:
+            {% endif %}
+            <b>{{ game.mouse_user.username }}</b>
+
+            </span>
+          {% if game.cat_turn %}
                 <div id="mouse_turn" style="visibility: hidden">TURNO DEL RATON</div>
             {% else %}
                 <div id="mouse_turn" style="visibility: visible">TURNO DEL RATON</div>

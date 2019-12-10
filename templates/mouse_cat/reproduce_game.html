@@ -64,7 +64,7 @@ var reproducing=-1;
             document.getElementById("play_stop_button").src="{{ baseUrl }}/img/stop.png";
             document.getElementById("play_stop_button").onclick=function() {make_move(0);};
             do_step(1);
-            reproducing = setInterval(function() { do_step(1); },3000);
+            reproducing = setInterval(function() { do_step(1); },1000);
         }
 
         else if (i === 0){
@@ -78,6 +78,8 @@ var reproducing=-1;
         }
 
     }
+
+
 
 /* Declaramos el tablero aqui, porque sino en cada movimiento se resetea */
 /* Pasamos el tablero a modo array (si no es un string)*/
@@ -128,20 +130,30 @@ function do_step(i) {
         var target_x = response.target % 8;
         var target_y = Math.trunc(response.target/8);
 
-        /*Cambiamos al jugador de sitio*/
-        var personaje = array[origin_y][origin_x];
-        array[origin_y][origin_x] = 0;
-        array[target_y][target_x] = personaje;
 
-        /*Actualizamos con el nuevo tablero*/
-        aux=array;
+        var origin_cell = document.getElementById("cell_"+origin_x+"_"+origin_y);
+        var target_cell = document.getElementById("cell_"+target_x+"_"+target_y);
 
-        /*ESTA ES LA IDEA DE LO QUE QUIERO HACER*/
-        /*Mandamos el array a la funcion para que cree el tablero*/
-        var temp = "{% url 'create_board_array' %}";
-        var final = temp + "?positions=" + array;
+        var move_aux = origin_cell.innerHTML;
 
-        $( "#chess_div").html('').load(final);
+        target_cell.innerHTML = move_aux;
+
+        origin_cell.innerText = "";
+
+        // /*Cambiamos al jugador de sitio*/
+        // var personaje = array[origin_y][origin_x];
+        // array[origin_y][origin_x] = 0;
+        // array[target_y][target_x] = personaje;
+        //
+        // /*Actualizamos con el nuevo tablero*/
+        // aux=array;
+        //
+        // /*ESTA ES LA IDEA DE LO QUE QUIERO HACER*/
+        // /*Mandamos el array a la funcion para que cree el tablero*/
+        // var temp = "{% url 'create_board_array' %}";
+        // var final = temp + "?positions=" + array;
+        //
+        // $( "#chess_div").html('').load(final);
 
         /* REVISAR: Esto es usando fade in y fade out, pero va igual de mal
 /*        $("#chess_div").fadeOut(0, function () {
