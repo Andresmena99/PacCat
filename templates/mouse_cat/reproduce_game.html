@@ -83,7 +83,7 @@ function do_step(i) {
     /*El parametro i puede ser 1 (avanazo 1 movimiento) o -1 (retrocedo)*/
     $.ajax({
     type: "POST",
-    url: '{% url 'move_service' %}',
+    url: '{% url 'get_move' %}',
     token: csrftoken,
     data: {
         shift: i,

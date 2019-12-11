@@ -938,6 +938,10 @@ def create_initial_board():
 # Esta funcion nos devuelve el json que nos pide el enunciado,
 @csrf_exempt
 def get_move_service(request):
+    if request.method == 'POST':
+        # REVISAR:
+        print("Devolver status 404")
+
     game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
     if len(game) == 0:
         return HttpResponse("ERROR")
