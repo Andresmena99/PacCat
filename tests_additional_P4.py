@@ -6,17 +6,107 @@
         Andrés Mena
 """
 import re
+
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.test import Client, TransactionTestCase
 from django.urls import reverse
 
 from datamodel import constants
 from datamodel.models import Game, GameStatus, Move
-from logic.tests_services import PlayGameBaseServiceTests, SHOW_GAME_SERVICE
+
+
+TEST_USERNAME_1 = "testUserMouseCatBaseTest_1"
+TEST_PASSWORD_1 = "hskjdhfhw"
+TEST_USERNAME_2 = "testUserMouseCatBaseTest_2"
+TEST_PASSWORD_2 = "kj83jfbhg"
+
+
+SHOW_GAME_SERVICE = "show_game"
+PLAY_GAME_WAITING = "play_waiting"
+SHOW_GAME_TITLE = r"<h1>Play</h1>|<h1>Jugar</h1>"
+
+SERVICE_DEF = {
+    SHOW_GAME_SERVICE: {
+        "title": SHOW_GAME_TITLE,
+        "pattern": r"(Board|Tablero): (?P<board>\[.*?\])"
+    },
+}
 
 
 # Tests classes:
-# - CheckGameWinner
+# - GameEndTests
 
-class CheckGameWinner(PlayGameBaseServiceTests):
+class ServiceBaseTest(TransactionTestCase):
+    def setUp(self):
+        self.paramsUser1 = {"username": TEST_USERNAME_1, "password": TEST_PASSWORD_1}
+        self.paramsUser2 = {"username": TEST_USERNAME_2, "password": TEST_PASSWORD_2}
+
+        User.objects.filter(
+            Q(username=self.paramsUser1["username"]) |
+            Q(username=self.paramsUser2["username"])).delete()
+
+        self.user1 = User.objects.create_user(
+            username=self.paramsUser1["username"],
+            password=self.paramsUser1["password"])
+        self.user2 = User.objects.create_user(
+            username=self.paramsUser2["username"],
+            password=self.paramsUser2["password"])
+
+        self.client1 = self.client
+        self.client2 = Client()
+
+    def tearDown(self):
+        User.objects.filter(
+            Q(username=self.paramsUser1["username"]) |
+            Q(username=self.paramsUser2["username"])).delete()
+
+    @classmethod
+    def loginTestUser(cls, client, user):
+        client.force_login(user)
+
+    @classmethod
+    def logoutTestUser(cls, client):
+        client.logout()
+
+    @classmethod
+    def decode(cls, txt):
+        return txt.decode("utf-8")
+
+
+
+
+
+class GameRequiredBaseServiceTests(ServiceBaseTest):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        self.user1.games_as_cat.all().delete()
+        self.user2.games_as_cat.all().delete()
+        super().tearDown()
+
+
+class PlayGameBaseServiceTests(GameRequiredBaseServiceTests):
+    def setUp(self):
+        super().setUp()
+
+        self.sessions = [
+            {"client": self.client1, "player": self.user1},
+            {"client": self.client2, "player": self.user2},
+        ]
+
+    def tearDown(self):
+        super().tearDown()
+
+    def set_game_in_session(self, client, user, game_id):
+        self.loginTestUser(client, user)
+        session = client.session
+        session[constants.GAME_SELECTED_SESSION_ID] = game_id
+        session.save()
+
+
+class GameEndTests(PlayGameBaseServiceTests):
     """Este test comprueba si ha ganado un gato o un raton"""
 
     def setUp(self):
@@ -58,6 +148,7 @@ class CheckGameWinner(PlayGameBaseServiceTests):
             {"player": self.user2, "origin": 48, "target": 57},
             {"player": self.user1, "origin": 43, "target": 50},
             {"player": self.user2, "origin": 57, "target": 48},
+            {"player": self.user1, "origin": 50, "target": 57},
         ]
 
         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2)
@@ -79,9 +170,9 @@ class CheckGameWinner(PlayGameBaseServiceTests):
                           self.decode(response.content))
             self.assertFalse(m)
 
-        # Este ultimo movimiento es el que encierra al raton
+        # Este ultimo movimiento es el que se comen al raton
         Move.objects.create(
-            game=game, player=self.user1, origin=50, target=57)
+            game=game, player=self.user2, origin=48, target=57)
 
         # Comprobamos que el juego pasa a estado finalizado
         self.assertEqual(game.status, GameStatus.FINISHED)
@@ -115,6 +206,8 @@ class CheckGameWinner(PlayGameBaseServiceTests):
             {"player": self.user1, "origin": 9, "target": 16},
             {"player": self.user2, "origin": 27, "target": 18},
             {"player": self.user1, "origin": 11, "target": 20},
+            {"player": self.user2, "origin": 18, "target": 9},
+            {"player": self.user1, "origin": 20, "target": 27},
         ]
 
         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2)
@@ -135,11 +228,10 @@ class CheckGameWinner(PlayGameBaseServiceTests):
                           self.decode(response.content))
             self.assertFalse(m)
 
-        # Este ultimo movimiento el raton se coloca a la misma altura que el
-        # ultimo gato, por los que nos deberia llevar a la pagina de raton
-        # gana, y el estado de la partida tiene que pasar a ser finalizado
+        # Este ultimo movimiento hace que el raton (PAC) llegue al otro extremo
+        # por lo que gana la partida
         Move.objects.create(
-            game=game, player=self.user2, origin=18, target=9)
+            game=game, player=self.user2, origin=9, target=2)
 
         self.assertEqual(game.status, GameStatus.FINISHED)
 

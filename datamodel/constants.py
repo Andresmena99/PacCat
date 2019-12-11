@@ -25,7 +25,7 @@ ERROR_SELECTED_GAME_NOT_YOURS = "Este no es tu juego"
 ERROR_SELECTED_GAME_NOT_EXISTS = "El juego seleccionado no existe"
 GAME_SELECTED_SESSION_ID = 'sesion_id'
 ERROR_INVALID_GET = "Tried accesing a page with ilegal get method"
-MOUSE_WINNER = "El raton ha ganado la partida"
+MOUSE_WINNER = "PAC ha ganado la partida"
 CAT_WINNER = "El PAC ha ganado la partida"
 ERROR_NOT_ALLOWED_TO_REPRODUCE = "No puedes reproducir esta partida, porque " \
                                  "no eras uno de sus participantes"
