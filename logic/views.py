@@ -675,17 +675,22 @@ def move_service(request):
             # Intentamos hacer el movimiento. En caso de que nos de una
             # excepcion, significa que el moviemiento no estaba permitido
             try:
+                origin = int(request.POST.get('origin'))
+                target = int(request.POST.get('target'))
                 if game.cat_turn:
                     Move.objects.create(
                         game=game, player=game.cat_user,
-                        origin=int(request.POST.get('origin')),
-                        target=int(request.POST.get('target')))
+                        origin=origin,
+                        target=target)
 
                 else:
                     Move.objects.create(
                         game=game, player=game.mouse_user,
-                        origin=int(request.POST.get('origin')),
-                        target=int(request.POST.get('target')))
+                        origin=origin,
+                        target=target)
+                if check_winner(game) != 0:
+                    return end_game(request, check_winner(game), game)
+
             except ValidationError:
                 # Añadimos el error del movimiento al formulario
                 return create_board(request, game)
@@ -693,15 +698,6 @@ def move_service(request):
 
             # Hacemos una comprobacion de si la partida tiene que finalizar
             # por si ha ganado el raton o el gato
-
-            # REVISAR:
-            # check_end = check_winner(game)
-            # if check_end == 1 or check_end == 2:
-            # Devolvemos la página con un mensaje de partida terminada
-            # y con el tablero pintado
-            # Si la partida ha terminado, significa que tenemos que mostrar
-            # el tablero una ultima vez y devolver la pagina con el mensaje
-            # de partida terminada
             if game.status == GameStatus.FINISHED:
                 return end_game(request, check_winner(game), game)
 

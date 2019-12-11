@@ -12,7 +12,7 @@
                 <div id="cell_{{forloop.counter0}}_{{forloop.parentloop.counter0}}" class="drop white" >
                 {% endif %}
                     {% if item ==  -1 %}
-                        <img class="drag square_image" id="{{forloop.counter0}}_{{forloop.parentloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
+                        <img class="drag square_image" id="{{forloop.counter0}}_{{forloop.parentloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Pacimage">
                     {% elif item == 1 or item == 2 or item == 3 or item == 4 %}
                         <img class="drag square_image" id="{{forloop.counter0}}_{{forloop.parentloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
                     {% endif %}
@@ -26,7 +26,7 @@
                 <div id="cell_{{forloop.counter0}}_{{forloop.parentloop.counter0}}" class="drop black" >
                 {% endif %}
                     {% if item ==  -1 %}
-                        <img class="drag square_image" id="{{forloop.counter0}}_{{forloop.parentloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Mouseimage">
+                        <img class="drag square_image" id="{{forloop.counter0}}_{{forloop.parentloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/main.png" alt="Pacimage">
                     {% elif item == 1 or item == 2 or item == 3 or item == 4 %}
                         <img class="drag square_image" id="{{forloop.counter0}}_{{forloop.parentloop.counter0}}" draggable="true" src="{{ baseUrl }}/img/personajes/char{{item}}.png" alt="Catimage" class="square_image">
                     {% endif %}
@@ -35,4 +35,5 @@
         {% endif %}
     {% endfor %}
     </div>
+
 {% endif %}

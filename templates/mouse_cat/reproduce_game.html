@@ -64,7 +64,7 @@ var reproducing=-1;
             document.getElementById("play_stop_button").src="{{ baseUrl }}/img/stop.png";
             document.getElementById("play_stop_button").onclick=function() {make_move(0);};
             do_step(1);
-            reproducing = setInterval(function() { do_step(1); },1000);
+            reproducing = setInterval(function() { do_step(1); },1200);
         }
 
         else if (i === 0){
@@ -73,7 +73,7 @@ var reproducing=-1;
             $("#previous_button").fadeIn();
             $("#next_button").fadeIn();
 
-            document.getElementById("play_stop_button").src="{{ baseUrl }}/img/reproduce.png";
+            document.getElementById("play_stop_button").src="{{ baseUrl }}/img/icons/solid-right-arrow.png";
             document.getElementById("play_stop_button").onclick=function() {make_move(2);};
         }
 
@@ -130,9 +130,20 @@ function do_step(i) {
 
         var move_aux = origin_cell.innerHTML;
 
-        target_cell.innerHTML = move_aux;
+        /* Saco el identificador de la imagen para hacer el fade out*/
+        var id_aux_origin = "cell_"+origin_x+"_"+origin_y;
+        var id_aux_target = "cell_"+target_x+"_"+target_y;
 
-        origin_cell.innerText = "";
+        var temp = $("#"+id_aux_origin).html();
+        var pos_origin = temp.indexOf("id=");
+        var image_id = temp.substring(pos_origin+4, pos_origin+7);
+
+        $("#"+image_id).fadeOut(function () {$("#"+id_aux_origin).html("");});
+
+        $("#"+id_aux_target).hide();
+        target_cell.innerHTML = move_aux;
+        $("#"+id_aux_target).fadeIn();
+
     }
     });
     }
@@ -142,9 +153,9 @@ function do_step(i) {
     <div id="hidden_winner"><h4>{{ winner }}</h4></div>
 
     <div>
-    <img id="previous_button" src="{{ baseUrl }}/img/prev_move.png" alt="previous_move" class="reproduction_images" onclick="make_move(-1)"></a>
-    <img id="next_button" src="{{ baseUrl }}/img/next_move.png" alt="next_move" class="reproduction_images" onclick="make_move(1)"></a>
-    <img id="play_stop_button" src="{{ baseUrl }}/img/reproduce.png" alt="reproduce" class="reproduction_images" onclick="make_move(2)"></a>
+    <img id="previous_button" src="{{ baseUrl }}/img/icons/double-arrow-left.png" alt="previous_move" class="reproduction_images" onclick="make_move(-1)"></a>
+    <img id="next_button" src="{{ baseUrl }}/img/icons/double-arrow.png" alt="next_move" class="reproduction_images" onclick="make_move(1)"></a>
+    <img id="play_stop_button" src="{{ baseUrl }}/img/icons/solid-right-arrow.png" alt="reproduce" class="reproduction_images" onclick="make_move(2)"></a>
 
 
     </div>
@@ -159,6 +170,6 @@ function do_step(i) {
 
     <h3>Game: {{ game.id }}</h3>
 
-    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+    <p><a href="{% url 'landing' %}">Volver a inicio</a></p>
 </div>
 {% endblock content %}

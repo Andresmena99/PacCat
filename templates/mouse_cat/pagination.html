@@ -3,7 +3,7 @@
 {% static "" as baseUrl %}
 <span class="align-content-center">
     {% if games.has_previous %}
-        <a href="?page={{ games.previous_page_number }}"><img src="{{ baseUrl }}/img/previous_table.png" alt="Previous_table" class="imagestylesmall"></a>
+        <a href="?page={{ games.previous_page_number }}"><img src="{{ baseUrl }}/img/icons/solid-left-arrow.png" alt="Previous_table" class="imagestylesmall"></a>
     {% endif %}
 
     <span class="current">
@@ -11,6 +11,6 @@
     </span>
 
     {% if games.has_next %}
-        <a href="?page={{ games.next_page_number }}"><img src="{{ baseUrl }}/img/next_table.png" alt="Next_table" class="imagestylesmall"></a>
+        <a href="?page={{ games.next_page_number }}"><img src="{{ baseUrl }}/img/icons/solid-right-arrow.png" alt="Next_table" class="imagestylesmall"></a>
     {% endif %}
 </span>

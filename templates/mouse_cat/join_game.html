@@ -36,9 +36,9 @@
                     {% if game.cat_turn == True %}
                         <td>Turno gato</td>
                     {% else %}
-                        <td>Turno raton</td>
+                        <td>Turno PAC</td>
                     {% endif %}
-                    <td><a href="{% url 'select_game' tipo=2 game_id=game.id %}"><img src="{{ baseUrl }}/img/raton.png" alt="Catimage" class="imagestylesmall"></a></td>
+                    <td><a href="{% url 'select_game' tipo=2 game_id=game.id %}"><img src="{{ baseUrl }}/img/personajes/main.png" alt="Catimage" class="imagestylesmall"></a></td>
                 </tr>
             {% endfor %}
             </table>
@@ -47,6 +47,6 @@
 
         </div>
     {% endif %}
-    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+    <p><a href="{% url 'landing' %}">Volver a inicio</a></p>
 </div>
 {% endblock content %}

@@ -6,20 +6,7 @@
     <h2>{{ winner }}</h2>
 
     <h3>Ultima situacion de la partida:</h3>
-    {% if board %}
-        <p>Board: {{ board }}</p>
-        <table id="chess_board">
-        {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
-            <td id="cell_{{ forloop.counter0}}" style='width:20px;border:1px solid #000000;text-align:center;'>
-                {% if item ==  0 %}   x
-                {% elif item == 1 %}  &#9922;
-                {% else %}  &#9920; {% endif %}
-            </td>
-            {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
-        {% endfor %}
-        </table>
-    {% endif %}
-    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+    {% include 'mouse_cat/board.html' %}
+    <p><a href="{% url 'landing' %}">Volver a inicio</a></p>
 </div>
 {% endblock content %}

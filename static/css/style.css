@@ -1831,10 +1831,10 @@ ol {
 
 /* Paneles laterales con márgenes */
 .izquierda{
-	padding-left: 10rem !important;
+	padding-left: 5rem !important;
 }
 .derecha{
-	padding-right: 10rem!important;
+	padding-right: 5rem!important;
 }
 
 .square_image {
@@ -1925,11 +1925,6 @@ ol {
 
 .gooey {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 142px;
-  height: 40px;
-  margin: -20px 0 0 -71px;
   filter: contrast(20);
 }
 .gooey .dot {
@@ -2019,4 +2014,20 @@ ol {
 
 .turn_advisor{
 	text-align: center;
+}
+
+#err_move{
+	color: darkred;
+	display: none;
+	text-align: center;
+}
+
+.container {
+	transition: all 1s;
+	max-height: 300px;
+}
+
+.container.pre-animation {
+	opacity:0;
+	max-height: 0;
 }
