@@ -1,5 +1,5 @@
 """
-    Vistas utilizadas a lo largo de la aplicación de RatonGato.
+    Vistas utilizadas a lo largo de la aplicación de PACGato.
 
     Author
     -------
@@ -424,7 +424,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         filter: int (default -1)
             Nos dice si tenemos que aplicar algun filtro a los resutlados que devolvemos
                 1: Partidas como gato
-                2: Partidas como raton
+                2: Partidas como PAC
                 3: Partidas en las que es mi turno
                 4: Partidas que he ganado (solo para finished)
 
@@ -446,7 +446,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         # bien el template
 
         # Filtro los juegos que estan activos, en los que el usuario que
-        # hace la solicitud es el gato o el raton
+        # hace la solicitud es el gato o el PAC
         mis_juegos_cat = Game.objects.filter(status=GameStatus.ACTIVE,
                                              cat_user=request.user)
         mis_juegos_mouse = Game.objects.filter(status=GameStatus.ACTIVE,
@@ -494,7 +494,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
             if game.cat_user != request.user \
                     and game.mouse_user != request.user:
                 # Error porque el jugador que solicita el juego no es ni el
-                # gato ni el raton
+                # gato ni el PAC
                 return HttpResponseNotFound(
                     constants.ERROR_SELECTED_GAME_NOT_YOURS)
 
@@ -517,7 +517,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         elif int(filter) == 1:
             one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
 
-        # En la seleccion de partidas a las que unirte, no hay partidas como raton
+        # En la seleccion de partidas a las que unirte, no hay partidas como PAC
         # Nunca es nuestro turno tampoco
         elif int(filter) == 2 or int(filter) == 3:
             one_player = []
@@ -697,7 +697,7 @@ def move_service(request):
                 # Revisar esto deberia devolver error
 
             # Hacemos una comprobacion de si la partida tiene que finalizar
-            # por si ha ganado el raton o el gato
+            # por si ha ganado el PAC o el gato
             if game.status == GameStatus.FINISHED:
                 return end_game(request, check_winner(game), game)
 
@@ -757,7 +757,7 @@ def reproduce_game_service(request):
         return errorHTTP(request,
                          constants.ERROR_NOT_FINISHED_YET)
 
-    # Si no somos ni el raton ni el gato, no podemos visualizar la partida
+    # Si no somos ni el PAC ni el gato, no podemos visualizar la partida
     if not (game.cat_user == request.user or game.mouse_user == request.user):
         return errorHTTP(request,
                          constants.ERROR_NOT_ALLOWED_TO_REPRODUCE)
@@ -906,7 +906,7 @@ def turn(request, game_id=-1):
 # Funcion que simplemente devuelve el tablero en funcion del estado de la partida
 def create_board_from_game(game):
     # Primero colocamos todas las casillas a 0, y luego donde estén los
-    # gatos lo ponemos a 1, y donde esté el raton a -1
+    # gatos lo ponemos a 1, y donde esté el PAC a -1
     board = [0] * 64
     board[game.cat1] = 1
     board[game.cat2] = 2

@@ -1,5 +1,5 @@
 """
-    Formularios utilizados a lo largo de la aplicación de RatonGato.
+    Formularios utilizados a lo largo de la aplicación de PACGato.
         - Game
         - Move
         - Counter

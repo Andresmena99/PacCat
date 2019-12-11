@@ -1,6 +1,6 @@
 """
     Mensajes de error constantes usados a lo largo de la aplicacion
-    de RatonGato.
+    de PACGato.
 
     Author
     -------

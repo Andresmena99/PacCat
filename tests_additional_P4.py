@@ -107,7 +107,7 @@ class PlayGameBaseServiceTests(GameRequiredBaseServiceTests):
 
 
 class GameEndTests(PlayGameBaseServiceTests):
-    """Este test comprueba si ha ganado un gato o un raton"""
+    """Este test comprueba si ha ganado un gato o un PAC"""
 
     def setUp(self):
         super().setUp()
@@ -118,12 +118,12 @@ class GameEndTests(PlayGameBaseServiceTests):
     def test1(self):
         """Se realiza una secuencia de movimientos. En cada movimiento,
         se comprueba que el estado de la partida siga siendo activo, y que la
-        respuesta de la página no sea la victoria ni de gato ni de raton. En el
+        respuesta de la página no sea la victoria ni de gato ni de PAC. En el
          último movimiento, hacemos que ganen los gatos porque encierran al
-         raton, y comprobamos que la partida pasa a estado finalizada, y que
+         PAC, y comprobamos que la partida pasa a estado finalizada, y que
          la pagina nos devuelve la respuesta de gato gana"""
 
-        # Generamos una secuencia de movimientos que encierra al raton
+        # Generamos una secuencia de movimientos que encierra al PAC
         # (excepto el ultimo movimiento)
         moves = [
             {"player": self.user1, "origin": 0, "target": 9},
@@ -156,7 +156,7 @@ class GameEndTests(PlayGameBaseServiceTests):
         self.set_game_in_session(self.client1, self.user1, game.id)
 
         # Todos estos movimientos tienen que dejar la partida como activa,
-        # y no nos pueden llevar a la página de victoria ni de gato ni de raton
+        # y no nos pueden llevar a la página de victoria ni de gato ni de PAC
         for move in moves:
             Move.objects.create(game=game, player=move["player"],
                                 origin=move["origin"], target=move["target"])
@@ -170,7 +170,7 @@ class GameEndTests(PlayGameBaseServiceTests):
                           self.decode(response.content))
             self.assertFalse(m)
 
-        # Este ultimo movimiento es el que se comen al raton
+        # Este ultimo movimiento es el que se comen al PAC
         Move.objects.create(
             game=game, player=self.user2, origin=48, target=57)
 
@@ -190,9 +190,9 @@ class GameEndTests(PlayGameBaseServiceTests):
     def test2(self):
         """Igual que el test1, se realiza una secuencia de movimentos, pero
         en este caso el que gana es el gato, porque se coloca a la misma altura
-        que el ultimo raton, y eso lo marcamos como victoria del gato"""
+        que el ultimo PAC, y eso lo marcamos como victoria del gato"""
 
-        # Generamos una secuencia de movimientos que hace ganar al raton
+        # Generamos una secuencia de movimientos que hace ganar al PAC
         # (excepto el ultimo movimiento)
         moves = [
             {"player": self.user1, "origin": 0, "target": 9},
@@ -215,7 +215,7 @@ class GameEndTests(PlayGameBaseServiceTests):
         self.set_game_in_session(self.client1, self.user1, game.id)
 
         # Todos estos movimientos tienen que dejar la partida como activa,
-        # y no nos pueden llevar a la página de victoria ni de gato ni de raton
+        # y no nos pueden llevar a la página de victoria ni de gato ni de PAC
         for move in moves:
             Move.objects.create(game=game, player=move["player"],
                                 origin=move["origin"], target=move["target"])
@@ -228,7 +228,7 @@ class GameEndTests(PlayGameBaseServiceTests):
                           self.decode(response.content))
             self.assertFalse(m)
 
-        # Este ultimo movimiento hace que el raton (PAC) llegue al otro extremo
+        # Este ultimo movimiento hace que el PAC (PAC) llegue al otro extremo
         # por lo que gana la partida
         Move.objects.create(
             game=game, player=self.user2, origin=9, target=2)

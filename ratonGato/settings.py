@@ -1,5 +1,5 @@
 """
-    Configuración correspondiente a toda la aplicación de RatonGato
+    Configuración correspondiente a toda la aplicación de PACGato
 
     Author
     -------

@@ -1,5 +1,5 @@
 """
-    URLs correspondientes a las vistas de la aplicación de RatonGato.
+    URLs correspondientes a las vistas de la aplicación de PACGato.
 
     Author
     -------

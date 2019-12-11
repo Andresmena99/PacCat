@@ -1,5 +1,5 @@
 """
-    Modelos de datos utilizados a lo largo de la aplicación de RatonGato.
+    Modelos de datos utilizados a lo largo de la aplicación de PACGato.
         - Game
         - Move
         - Counter
