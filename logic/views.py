@@ -598,7 +598,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         # Entrar en modo reproduccion
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) != -1:
         # Almacenamos en la sesion el juego que se está reproduciendo
-        request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID] = game_id
+        request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
         return reproduce_game_service(request)
 
 
@@ -742,7 +742,7 @@ def reproduce_game_service(request):
             -1: Previous
             2: Play
     """
-    game_id = request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID]
+    game_id = request.session[constants.GAME_SELECTED_SESSION_ID]
     game = Game.objects.filter(id=game_id)
 
     # No hay ninguna partida con el id
@@ -938,11 +938,10 @@ def create_initial_board():
 # Esta funcion nos devuelve el json que nos pide el enunciado,
 @csrf_exempt
 def get_move_service(request):
-    if request.method == 'POST':
-        # REVISAR:
-        print("Devolver status 404")
+    if request.method == 'GET':
+        return HttpResponseNotFound(constants.GET_NOT_ALLOWED)
 
-    game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
+    game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_SESSION_ID])
     if len(game) == 0:
         return HttpResponse("ERROR")
 
@@ -952,6 +951,11 @@ def get_move_service(request):
     shift = int(request.POST.get('shift'))
 
     moves = Move.objects.filter(game=game).order_by('id')
+
+    # Si todavia no se ha hecho ningun movimiento, inicializamos a 0
+    if constants.GAME_SELECTED_MOVE_NUMBER not in request.session:
+        request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
+
     move_number = request.session[constants.GAME_SELECTED_MOVE_NUMBER]
     if shift == -1:
         move_number -= 1
@@ -963,7 +967,7 @@ def get_move_service(request):
         json_dict['origin'] = 0
         json_dict['target'] = 0
         json_dict['previous'] = 0
-        json_dict['next'] = 0
+        json_dict['next'] = 1
 
     else:
         if move_number < len(moves):
@@ -979,7 +983,7 @@ def get_move_service(request):
                 json_dict['target'] = real_move.origin
 
             json_dict['previous'] = 1 if move_number > 0 or shift == 1 else 0
-            json_dict['next'] = 1 if move_number < len(moves) - 1 else 0
+            json_dict['next'] = 1 if move_number < len(moves) - 1 or shift == -1 else 0
 
         else:
             json_dict['origin'] = 0
