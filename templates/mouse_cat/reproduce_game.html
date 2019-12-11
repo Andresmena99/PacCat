@@ -134,9 +134,7 @@ function do_step(i) {
         var id_aux_origin = "cell_"+origin_x+"_"+origin_y;
         var id_aux_target = "cell_"+target_x+"_"+target_y;
 
-        var temp = $("#"+id_aux_origin).html();
-        var pos_origin = temp.indexOf("id=");
-        var image_id = temp.substring(pos_origin+4, pos_origin+7);
+        var image_id = $("#"+id_aux_origin).children("img").attr("id");
 
         $("#"+image_id).fadeOut(function () {$("#"+id_aux_origin).html("");});
 

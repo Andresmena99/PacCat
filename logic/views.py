@@ -119,14 +119,16 @@ def end_game(request, winner, game):
             msg = constants.CAT_WINNER + ". Enhorabuena " + str(request.user)
             context_dict['winner'] = msg
         else:
-            msg = constants.CAT_WINNER + ". Sigue practicando " + str(request.user)
+            msg = constants.CAT_WINNER + ". Sigue practicando " + str(
+                request.user)
             context_dict['winner'] = msg
     if winner == 2:
         if request.user == game.mouse_user:
             msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(request.user)
             context_dict['winner'] = msg
         else:
-            msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(request.user)
+            msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(
+                request.user)
             context_dict['winner'] = msg
 
     context_dict['board'] = board
@@ -512,10 +514,12 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
 
         # En funcion de si tenemos aplicado o no el filtro, devuelve unas partidas de un jugador u otras
         if int(filter) == -1:
-            one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
+            one_player = Game.objects.filter(mouse_user=None,
+                                             status=GameStatus.CREATED)
 
         elif int(filter) == 1:
-            one_player = Game.objects.filter(mouse_user=None, status=GameStatus.CREATED)
+            one_player = Game.objects.filter(mouse_user=None,
+                                             status=GameStatus.CREATED)
 
         # En la seleccion de partidas a las que unirte, no hay partidas como PAC
         # Nunca es nuestro turno tampoco
@@ -545,7 +549,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
             game = game[0]
             if game.status != GameStatus.CREATED or game.mouse_user is not None:
                 return render(request, 'mouse_cat/join_game.html',
-                              {'msg_error': constants.ERROR_SELECTED_GAME_NOT_AVAILABLE})
+                              {
+                                  'msg_error': constants.ERROR_SELECTED_GAME_NOT_AVAILABLE})
 
             # Le meto en la partida y empieza el juego
             else:
@@ -557,13 +562,18 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
 
         else:
             return render(request, 'mouse_cat/join_game.html',
-                          {'msg_error': constants.ERROR_SELECTED_GAME_NOT_EXISTS})
+                          {
+                              'msg_error': constants.ERROR_SELECTED_GAME_NOT_EXISTS})
 
     # Muestro todas las partidas finalizadas en las que yo era alguno de los
     # participantes
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) == -1:
-        finished_as_cat = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
-        finished_as_mouse = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
+        finished_as_cat = Game.objects.filter(status=GameStatus.FINISHED,
+                                              cat_user=request.user).order_by(
+            'id')
+        finished_as_mouse = Game.objects.filter(status=GameStatus.FINISHED,
+                                                mouse_user=request.user).order_by(
+            'id')
 
         context_dict = {}
 
@@ -593,7 +603,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         paginator = Paginator(games_list, 5)
         page = request.GET.get('page')
         games = paginator.get_page(page)
-        return render(request, 'mouse_cat/finished_games.html', {'games': games})
+        return render(request, 'mouse_cat/finished_games.html',
+                      {'games': games})
 
         # Entrar en modo reproduccion
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) != -1:
@@ -669,51 +680,49 @@ def move_service(request):
         # realizar.
 
         try:
+            origin = int(request.POST.get('origin'))
+            target = int(request.POST.get('target'))
+        except ValueError:
+            return HttpResponse(json.dumps({'status': -2}),
+                                content_type="application/json")
+
+        try:
             # Sacamos la partida que se esta jugando de la sesión
             game = Game.objects.filter(id=request.session[
                 constants.GAME_SELECTED_SESSION_ID])[0]
             # Intentamos hacer el movimiento. En caso de que nos de una
             # excepcion, significa que el moviemiento no estaba permitido
             try:
-                origin = int(request.POST.get('origin'))
-                target = int(request.POST.get('target'))
                 if game.cat_turn:
                     Move.objects.create(
                         game=game, player=game.cat_user,
                         origin=origin,
                         target=target)
-
                 else:
                     Move.objects.create(
                         game=game, player=game.mouse_user,
                         origin=origin,
                         target=target)
                 if check_winner(game) != 0:
-                    return end_game(request, check_winner(game), game)
-
+                    return HttpResponse(json.dumps({'status': 2}),
+                                        content_type="application/json")
             except ValidationError:
-                # Añadimos el error del movimiento al formulario
-                return create_board(request, game)
-                # Revisar esto deberia devolver error
+                return HttpResponse(json.dumps({'status': -1}),
+                                    content_type="application/json")
 
-            # Hacemos una comprobacion de si la partida tiene que finalizar
-            # por si ha ganado el PAC o el gato
-            if game.status == GameStatus.FINISHED:
-                return end_game(request, check_winner(game), game)
-
-            # Generamos de nuevo el tablero, pero se manda un formulario que
-            # puede contener el error en el movimiento
-            return create_board(request, game)
+            return HttpResponse(json.dumps({'status': 0}),
+                                content_type="application/json")
 
         # Si intentamos sacar un id de un juego que no existe, nos dará
         # este error
-        except KeyError:
-            return HttpResponseNotFound(
-                constants.ERROR_SELECTED_GAME_NOT_EXISTS)
+        except KeyError :
+            return HttpResponse(json.dumps({'status': -2}),
+                                content_type="application/json")
 
     # GET: Tiene que dar error. No se puede llamar a este servicio en modo get
     else:
-        return HttpResponseNotFound(constants.ERROR_INVALID_GET)
+        return HttpResponse(json.dumps({'status': -2}),
+                            content_type="application/json")
 
 
 @login_required
@@ -724,12 +733,17 @@ def finished_games(request):
 
     # Tenemos que meter al usuario en la partida con id mas alto
     # Entre todas las partidas, miro las que solo tienen un jugador
-    finalizadas_raton = Game.objects.filter(status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
-    finalizadas_gato = Game.objects.filter(status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
+    finalizadas_raton = Game.objects.filter(status=GameStatus.FINISHED,
+                                            mouse_user=request.user).order_by(
+        'id')
+    finalizadas_gato = Game.objects.filter(status=GameStatus.FINISHED,
+                                           cat_user=request.user).order_by(
+        'id')
 
     partidas_finalizadas = list(chain(finalizadas_raton, finalizadas_gato))
     if len(partidas_finalizadas) > 0:
-        return render(request, 'mouse_cat/finished_games.html', {'finished': partidas_finalizadas})
+        return render(request, 'mouse_cat/finished_games.html',
+                      {'finished': partidas_finalizadas})
 
     return render(request, 'mouse_cat/finished_games.html')
 
@@ -777,17 +791,21 @@ def reproduce_game_service(request):
         winner = check_winner(game)
         if winner == 1:
             if request.user == game.cat_user:
-                msg = constants.CAT_WINNER + ". Enhorabuena " + str(request.user)
+                msg = constants.CAT_WINNER + ". Enhorabuena " + str(
+                    request.user)
                 context_dict['winner'] = msg
             else:
-                msg = constants.CAT_WINNER + ". Sigue practicando " + str(request.user)
+                msg = constants.CAT_WINNER + ". Sigue practicando " + str(
+                    request.user)
                 context_dict['winner'] = msg
         if winner == 2:
             if request.user == game.mouse_user:
-                msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(request.user)
+                msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(
+                    request.user)
                 context_dict['winner'] = msg
             else:
-                msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(request.user)
+                msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(
+                    request.user)
                 context_dict['winner'] = msg
 
         return render(request, 'mouse_cat/reproduce_game.html', context_dict)
@@ -896,8 +914,24 @@ def turn(request, game_id=-1):
     game = game[0]
 
     if game is not None:
-        return HttpResponse(json.dumps({'turn': game.cat_turn}),
-                            content_type="application/json")
+        if check_winner(game) != 0:
+            return HttpResponse(json.dumps({'winner': 1}),
+                                content_type="application/json")
+
+        moves = Move.objects.filter(game=game).order_by('-date');
+        if len(moves) != 0:
+            last_move = moves[0]
+            return HttpResponse(json.dumps({'turn': game.cat_turn,
+                                            'origin': last_move.origin,
+                                            'target': last_move.target,
+                                            'winner': 0}),
+                                content_type="application/json")
+        else:
+            return HttpResponse(json.dumps({'turn': game.cat_turn,
+                                            'origin': -1,
+                                            'target': -1,
+                                            'winner': 0}),
+                                content_type="application/json")
 
     return HttpResponse(json.dumps({'turn': -1}),
                         content_type="application/json")
@@ -942,7 +976,8 @@ def get_move_service(request):
         # REVISAR:
         print("Devolver status 404")
 
-    game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
+    game = Game.objects.filter(
+        id=request.session[constants.GAME_SELECTED_REPRODUCE_SESSION_ID])
     if len(game) == 0:
         return HttpResponse("ERROR")
 

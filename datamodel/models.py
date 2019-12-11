@@ -432,6 +432,8 @@ class Move(models.Model):
                 if self.game.mouse == self.origin:
                     self.game.mouse = self.target
                     self.game.cat_turn = True
+                else:
+                    raise ValidationError(constants.MSG_ERROR_MOVE)
             else:
                 raise ValidationError(constants.MSG_ERROR_MOVE)
         else:
