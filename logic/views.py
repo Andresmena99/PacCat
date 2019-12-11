@@ -994,10 +994,7 @@ def get_move_service(request):
         if request.session[constants.GAME_SELECTED_MOVE_NUMBER] < 0:
             request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
 
-    print(json_dict)
-
     # Cuando se acaban los movimientos (campo next == 0), se añade un campo al diccionario con el gana
-
     return HttpResponse(json.dumps(json_dict),
                         content_type="application/json")
 

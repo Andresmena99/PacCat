@@ -79,12 +79,6 @@ var reproducing=-1;
 
     }
 
-
-
-/* Declaramos el tablero aqui, porque sino en cada movimiento se resetea */
-/* Pasamos el tablero a modo array (si no es un string)*/
-var array = JSON.parse("{{board}}");
-
 function do_step(i) {
     /*El parametro i puede ser 1 (avanazo 1 movimiento) o -1 (retrocedo)*/
     $.ajax({
@@ -139,28 +133,6 @@ function do_step(i) {
         target_cell.innerHTML = move_aux;
 
         origin_cell.innerText = "";
-
-        // /*Cambiamos al jugador de sitio*/
-        // var personaje = array[origin_y][origin_x];
-        // array[origin_y][origin_x] = 0;
-        // array[target_y][target_x] = personaje;
-        //
-        // /*Actualizamos con el nuevo tablero*/
-        // aux=array;
-        //
-        // /*ESTA ES LA IDEA DE LO QUE QUIERO HACER*/
-        // /*Mandamos el array a la funcion para que cree el tablero*/
-        // var temp = "{% url 'create_board_array' %}";
-        // var final = temp + "?positions=" + array;
-        //
-        // $( "#chess_div").html('').load(final);
-
-        /* REVISAR: Esto es usando fade in y fade out, pero va igual de mal
-/*        $("#chess_div").fadeOut(0, function () {
-            $("#chess_div").html('').load(final, function () {
-                $("#chess_div").fadeIn('fast');
-        });});*/
-
     }
     });
     }
