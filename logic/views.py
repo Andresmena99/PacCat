@@ -15,12 +15,28 @@ from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from datamodel import constants
 from datamodel.models import Counter, Game, GameStatus, Move, check_winner
 from logic.forms import SignupForm, MoveForm, UserForm
 from itertools import chain
 from django.core.paginator import Paginator
+
+
+def countErr(request):
+    print("aumentamos")
+    # Si el contador ya esta definido en la sesion, lo incrementamos en 1
+    if "counter" in request.session:
+        request.session["counter"] += 1
+
+    # En caso de no tener todavia contador en la sesion, lo inicializamos a 1
+    else:
+        counter_session = 1
+        request.session["counter"] = counter_session
+
+    # Incrementamos el contador global
+    Counter.objects.inc()
 
 
 def anonymous_required(f):
@@ -72,7 +88,7 @@ def login_required(f):
 
     def wrapped(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            print("Incrementar contador fallo login")
+            countErr(request)
 
             return redirect(reverse('login'))
         else:
@@ -82,13 +98,14 @@ def login_required(f):
 
 
 def error404(request, url=None, err=None):
-    print("Me meto en error404")
 
     context_dict = {}
     if err is not None:
         context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. " + err}
     elif url is not None:
         context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. No se ha encontrado la pagina " + str(url)}
+
+    countErr(request)
 
     return render(request, "mouse_cat/error.html", context_dict, status=404)
 
@@ -112,7 +129,7 @@ def errorHTTP(request, exception=None):
         -------
             Profesores PSI
     """
-    print("Me meto en errorHTTP")
+    countErr(request)
     context_dict = {'msg_error': exception}
     return render(request, "mouse_cat/error.html", context_dict)
 
@@ -357,17 +374,11 @@ def counter_service(request):
             Eric Morales
     """
 
-    # Si el contador ya esta definido en la sesion, lo incrementamos en 1
-    if "counter" in request.session:
-        request.session["counter"] += 1
-
-    # En caso de no tener todavia contador en la sesion, lo inicializamos a 1
-    else:
-        counter_session = 1
+    # En caso de no tener todavia contador en la sesion, lo inicializamos a 0
+    # Ya que aun no ha habido errores.
+    if "counter" not in request.session:
+        counter_session = 0
         request.session["counter"] = counter_session
-
-    # Incrementamos el contador global
-    Counter.objects.inc()
 
     context_dict = {'counter_session': request.session["counter"],
                     'counter_global': Counter.objects.get_current_value()}
@@ -692,11 +703,7 @@ def show_game_service(request):
 
         return create_board(request, game)
     except KeyError:
-        return render(request, "mouse_cat/error.html",
-                      {'msg_error': "No se ha seleccionado ninguna partida"})
-
-
-from django.views.decorators.csrf import csrf_exempt
+        return errorHTTP(request, constants.ERROR_NO_SELECTED_GAME)
 
 
 @csrf_exempt

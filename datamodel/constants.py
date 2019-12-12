@@ -23,6 +23,7 @@ MSG_ERROR_NO_AVAILABLE_GAMES = "There is no available games|No hay juegos " \
 ERROR_SELECTED_GAME_NOT_AVAILABLE = "El juego seleccionado ya no esta disponible"
 ERROR_SELECTED_GAME_NOT_YOURS = "Este no es tu juego"
 ERROR_SELECTED_GAME_NOT_EXISTS = "El juego seleccionado no existe"
+ERROR_NO_SELECTED_GAME = "No se ha seleccionado ninguna partida"
 GAME_SELECTED_SESSION_ID = 'sesion_id'
 ERROR_INVALID_GET = "Tried accesing a page with ilegal get method"
 MOUSE_WINNER = "PAC ha ganado la partida"

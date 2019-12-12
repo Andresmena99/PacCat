@@ -9,7 +9,6 @@
     {% block extra_css %}
         <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
         <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}" />
-        <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'css/slicknav.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'css/owl.carousel.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'css/magnific-popup.css' %}" />
@@ -56,7 +55,7 @@
                     <ul class="main-menu primary-menu">
                         <li><a href="{% url 'index' %}">Inicio</a></li>
                         <li><a href="{% url 'counter' %}">Contador</a></li>
-                        <li><a href="{% url 'select_game' tipo=1 %}" class="slidermenu">Partidas</a>
+                        <li><a href="{% url 'select_game' tipo=1 %}" class="slidermenu">Partidas &darr;</a>
                             <ul class="sub-menu">
                                 <li><a href="{% url 'create_game' %}">Nueva Partida</a></li>
                                 <li><a href="{% url 'select_game' tipo=2 %}">Unirse a Partida Existente</a></li>
