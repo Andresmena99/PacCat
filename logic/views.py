@@ -9,7 +9,6 @@
 import json
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden, HttpResponseNotFound
@@ -53,7 +52,38 @@ def anonymous_required(f):
     return wrapped
 
 
+def login_required(f):
+    """
+        Decorador para limitar funciones a usuarios anonimos.
+
+        Parameters
+        ----------
+        f : funcion
+            Funcion a ejecutar
+
+        Returns
+        -------
+        HttpResponse : error o la respuesta de la funcion.
+
+        Author
+        -------
+            Profesores PSI
+    """
+
+    def wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            print("Incrementar contador fallo login")
+
+            return redirect(reverse('login'))
+        else:
+            return f(request, *args, **kwargs)
+
+    return wrapped
+
+
 def error404(request, url=None, err=None):
+    print("Me meto en error404")
+
     context_dict = {}
     if err is not None:
         context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. " + err}
@@ -82,6 +112,7 @@ def errorHTTP(request, exception=None):
         -------
             Profesores PSI
     """
+    print("Me meto en errorHTTP")
     context_dict = {'msg_error': exception}
     return render(request, "mouse_cat/error.html", context_dict)
 
@@ -514,8 +545,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
 
         # Error porque no se ha encontrado un juego con el id solicitado
         else:
-            return HttpResponseNotFound(
-                constants.ERROR_SELECTED_GAME_NOT_EXISTS)
+            return errorHTTP(request,
+                             constants.ERROR_SELECTED_GAME_NOT_EXISTS)
 
     # Quiero ver las partidas a las que me quiero unir
     elif request.method == 'GET' and int(tipo) == 2 and int(game_id) == -1:
@@ -729,7 +760,7 @@ def move_service(request):
 
         # Si intentamos sacar un id de un juego que no existe, nos dará
         # este error
-        except KeyError :
+        except KeyError:
             return HttpResponse(json.dumps({'status': -2}),
                                 content_type="application/json")
 
@@ -901,7 +932,7 @@ def create_only_board(request, game_id=-1):
     # No hay ninguna partida con el id
     if len(game) == 0:
         return error404(request,
-                         constants.ERROR_SELECTED_GAME_NOT_EXISTS)
+                        constants.ERROR_SELECTED_GAME_NOT_EXISTS)
 
     game = game[0]
 
