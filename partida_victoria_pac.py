@@ -38,7 +38,6 @@ moves = [
     {"player": user1, "origin": 43, "target": 50},
     {"player": user2, "origin": 57, "target": 48},
     {"player": user1, "origin": 50, "target": 57},
-    {"player": user2, "origin": 48, "target": 57},
 ]
 
 

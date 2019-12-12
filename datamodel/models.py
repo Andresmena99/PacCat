@@ -68,7 +68,7 @@ def valid_move(game, origin, target):
 
         Parameters
         ----------
-        game : int
+        game : Game
             Juego actual
         origin : int
             Posición del tablero origen
@@ -146,14 +146,28 @@ def check_winner(game):
     """
 
     if game is not None:
-        # Compruebo si el gato ha llegado al otro extremo
+        # Compruebo si PAC ha llegado al otro extremo
         if game.mouse in [0, 2, 4, 6]:
             return 2
 
-        if game.mouse in [game.cat1, game.cat2, game.cat3, game.cat4]:
-            return 1
+        if not game.cat_turn:
+            mouse = game.mouse
+            # El otro caso, es que el raton se vea rodeado
+            # Probamos el movimiento a todas las posibles casillas del gato
+            flag = 0
+            for i in range(Game.MIN_CELL, Game.MAX_CELL):
+                try:
+                    if valid_move(game, mouse, i):
+                        # Si tengo un movimiento valido, todavia no he perdido
+                        flag = 1
+                except ValidationError:
+                    pass
 
-        # Si no hay ganador
+            if flag == 0:
+                # El raton pierde porque no puede hacer ningun movimiento
+                return 1
+
+            # Si llegamos aqui, es porque no hay ganador
         return 0
 
 

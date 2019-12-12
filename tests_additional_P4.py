@@ -59,7 +59,6 @@ class GameEndTests(PlayGameBaseServiceTests):
             {"player": self.user2, "origin": 48, "target": 57},
             {"player": self.user1, "origin": 43, "target": 50},
             {"player": self.user2, "origin": 57, "target": 48},
-            {"player": self.user1, "origin": 50, "target": 57},
         ]
 
         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2)
@@ -81,10 +80,9 @@ class GameEndTests(PlayGameBaseServiceTests):
                           self.decode(response.content))
             self.assertFalse(m)
 
-        # Este ultimo movimiento es el que se comen al PAC
+        # Este ultimo movimiento en el que encierran a pac
         Move.objects.create(
-            game=game, player=self.user2, origin=48, target=57)
-
+            game=game, player=self.user1, origin=50, target=57)
         # Comprobamos que el juego pasa a estado finalizado
         self.assertEqual(game.status, GameStatus.FINISHED)
 
