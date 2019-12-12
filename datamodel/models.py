@@ -88,6 +88,11 @@ def valid_move(game, origin, target):
         -------
             Eric Morales
     """
+
+    # Si la casilla está ocupada
+    if target in [game.cat1, game.cat2, game.cat3, game.cat4, game.mouse]:
+        raise ValidationError(constants.MSG_ERROR_MOVE)
+
     x_ori = origin // 8 + 1
     y_ori = origin % 8 + 1
 
@@ -406,7 +411,9 @@ class Move(models.Model):
 
         valid_move(self.game, self.origin, self.target)
 
+
         if self.player == self.game.cat_user:
+
             if self.game.cat_turn:
                 if self.game.cat1 == self.origin:
                     self.game.cat1 = self.target
