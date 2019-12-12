@@ -1524,8 +1524,8 @@ ol {
 		max-width: 1175px;
 	}
 	.chess_board {
-	  width: 40vw!important;
-	  height: 40vw!important;
+	  width: 35vw!important;
+	  height: 35vw!important;
 	}
 }
 
@@ -1538,10 +1538,10 @@ ol {
 
 /* Medium screen : 992px. */
 
-@media only screen and (min-width: 992px) and (max-width: 1199px) {
+@media only screen and (min-width: 1100px) and (max-width: 1199px) {
 	.chess_board {
-	  width: 40vw!important;
-	  height: 40vw!important;
+	  width: 35vw!important;
+	  height: 35vw!important;
 	}
 	.blog-item .blog-thumb {
 		width: 250px;
@@ -1575,7 +1575,11 @@ ol {
 
 /* Tablet :768px. */
 
-@media only screen and (min-width: 768px) and (max-width: 991px) {
+@media only screen and (min-width: 900px) and (max-width: 1106px) {
+	.chess_board {
+	  width: 35vw!important;
+	  height: 35vw!important;
+	}
 	.header-bar-warp {
 		padding: 39px 15px 0;
 	}
@@ -1640,7 +1644,8 @@ ol {
 
 /* Large Mobile :480px. */
 
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: 900px) {
+
 	.header-bar-warp {
 		padding: 25px 20px 10px;
 	}
@@ -1746,7 +1751,16 @@ ol {
 
 /* Small Mobile :320px. */
 
-@media only screen and (max-width: 479px) {
+@media only screen and (max-width: 750px) {
+
+	.izquierda {
+		padding-right: 0!important;
+	}
+
+	.derecha {
+		padding-left: 0!important;
+	}
+
 	.hero-item h2 {
 		font-size: 55px;
 		margin-bottom: 20px;
@@ -1776,6 +1790,24 @@ ol {
 	}
 }
 
+@media only screen and (max-width: 576px) {
+
+	.izquierda {
+		display: none;
+	}
+
+	.derecha {
+		display: none;
+	}
+
+	.responsive_game {
+		visibility: visible!important;
+	}
+}
+
+.responsive_game {
+		visibility: hidden;
+}
 
 .old_ratonGato {
 	padding-top: 10rem;
@@ -1802,8 +1834,8 @@ ol {
 .chess_board {
   border: 4px solid rgba(255, 255, 255, 0.73);
   text-align: center;
-  width: 70vh;
-  height: 70vh;
+  width: 50vh;
+  height: 50vh;
   margin: auto;
 }
 
@@ -1831,10 +1863,14 @@ ol {
 
 /* Paneles laterales con márgenes */
 .izquierda{
-	padding-left: 5rem !important;
+	padding-left: 5rem;
+	padding-top: 10rem !important;
+	padding-right: 0!important;
 }
 .derecha{
-	padding-right: 5rem!important;
+	padding-right: 5rem;
+	padding-top: 10rem !important;
+	padding-left: 0!important;
 }
 
 .square_image {
@@ -1921,81 +1957,6 @@ ol {
   opacity: 1;
 }
 
-
-
-.gooey {
-  position: absolute;
-  filter: contrast(20);
-}
-.gooey .dot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  top: 12px;
-  left: 15px;
-  filter: blur(4px);
-  background: #e9e9e9;
-  border-radius: 50%;
-  transform: translateX(0);
-  animation: dot 2.8s infinite;
-}
-.gooey .dots {
-  transform: translateX(0);
-  margin-top: 12px;
-  margin-left: 31px;
-  animation: dots 2.8s infinite;
-}
-.gooey .dots span {
-  display: block;
-  float: left;
-  width: 8px;
-  height: 8px;
-  margin-left: 16px;
-  filter: blur(4px);
-  background: #E9E9E9;
-  border-radius: 50%;
-}
-@-moz-keyframes dot {
-  50% {
-    transform: translateX(96px);
-  }
-}
-@-webkit-keyframes dot {
-  50% {
-    transform: translateX(96px);
-  }
-}
-@-o-keyframes dot {
-  50% {
-    transform: translateX(96px);
-  }
-}
-@keyframes dot {
-  50% {
-    transform: translateX(96px);
-  }
-}
-@-moz-keyframes dots {
-  50% {
-    transform: translateX(-31px);
-  }
-}
-@-webkit-keyframes dots {
-  50% {
-    transform: translateX(-31px);
-  }
-}
-@-o-keyframes dots {
-  50% {
-    transform: translateX(-31px);
-  }
-}
-@keyframes dots {
-  50% {
-    transform: translateX(-31px);
-  }
-}
-
 /*Iconos de imagenes para reproducir*/
 .reproduction_images{
 	height: 2rem;
@@ -2035,7 +1996,8 @@ ol {
 
 
 .lds-ellipsis {
-  display: inline-block;
+	margin: auto;
+	display: block;
   position: relative;
   width: 80px;
   height: 80px;
@@ -2089,5 +2051,7 @@ ol {
     transform: translate(24px, 0);
   }
 }
+
+
 
 

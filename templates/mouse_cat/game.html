@@ -111,8 +111,8 @@ function do_move(o_x, o_y, t_x, t_y) {
 
 function checkTurn() {
     loopTurn = setInterval(turnLoop,2000);
-    $( "#waiting").fadeIn("slow");
-    $( "#turn").fadeOut("slow");
+    $( ".waiting").fadeIn("slow");
+    $( ".turn").fadeOut("slow");
     turnLoop();
 }
 
@@ -130,8 +130,8 @@ function turnLoop(){
                 {
                     clearInterval(loopTurn);
                     loopTurn = 0;
-                    $( "#waiting").fadeOut("slow");
-                    $( "#turn").fadeIn("slow");
+                    $( ".waiting").fadeOut("slow");
+                    $( ".turn").fadeIn("slow");
 
 
                     if (response.origin != -1) {
@@ -168,6 +168,22 @@ function turnLoop(){
         });
     }
 
+    $(document).ready(function() {
+    var audioElement = document.createElement('audio');
+    audioElement.setAttribute('src', '{{ baseUrl }}/music/song.mp3');
+    audioElement.volume = 0.01;
+
+    audioElement.addEventListener('ended', function() {
+        this.play();
+    }, false);
+
+    $('#pause').click(function() {
+        audioElement.pause();
+    });
+
+    audioElement.play();
+});
+
 </script>
 
 
@@ -191,27 +207,19 @@ function turnLoop(){
 
 
         {% if game.mouse_user.id == request.user.id %}
-            <div id="waiting" style="display: none">
+            <div class="waiting" style="display: none">
                 Esperando rival...
                 <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
             </div>
         {% else %}
-            <div id="turn" style="visibility: visible">¡ES TU TURNO!</div>
+            <div class="turn">¡ES TU TURNO!</div>
         {% endif %}
 
 
     </div>
 
     <div id="chess_div" class="col-sm-8 text-left">
-        <div id="winner" style="display: none; margin:auto;">
-            ¡Enhorabuena <span class="name"></span>!
-        </div>
-        <div id="loser"style="display: none; margin:auto;">
-            Has perdido <span class="name"></span>...
-        </div>
       {% include 'mouse_cat/board.html' %}
-        <div id="err_move"><strong>Movimiento no permitido</strong></div>
-
     </div>
     <div class="col-sm-2 sidenav derecha">
       <div class="well">
@@ -231,16 +239,29 @@ function turnLoop(){
             {% endif %}
 
           {% if game.mouse_user.id != request.user.id %}
-            <div id="waiting" style="display: none">
+            <div class="waiting" style="display: none">
                 Esperando rival...
                 <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
             </div>
           {% else %}
-            <div id="turn" style="visibility: visible">¡ES TU TURNO!</div>
+            <div class="turn" style="visibility: visible">¡ES TU TURNO!</div>
         {% endif %}
       </div>
     </div>
   </div>
+    <div class="responsive_game">
+            Jugando contra:
+            {% if request.user == game.mouse_user %}
+            <b>{{ game.cat_user.username }}</b>
+            {% else %}
+            <b>{{ game.mouse_user.username }}</b>
+            {% endif %}
+            <div class="waiting" style="display: none">
+                <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                Esperando rival...
+            </div>
+            <div class="turn">¡ES TU TURNO!</div>
+    </div>
 </div>
 
 {% endblock content %}
