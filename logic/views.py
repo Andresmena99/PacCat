@@ -53,6 +53,16 @@ def anonymous_required(f):
     return wrapped
 
 
+def error404(request, url=None, err=None):
+    context_dict = {}
+    if err is not None:
+        context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. " + err}
+    elif url is not None:
+        context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. No se ha encontrado la pagina " + str(url)}
+
+    return render(request, "mouse_cat/error.html", context_dict, status=404)
+
+
 def errorHTTP(request, exception=None):
     """
         Crea un error http basadp en una solicitud y lo devuelve
@@ -192,7 +202,7 @@ def login_service(request):
 
                 return redirect(reverse('logic:index'))
             else:
-                return HttpResponse(constants.EEROR_ACCOUNT_DISABLED)
+                return errorHTTP(request, constants.EEROR_ACCOUNT_DISABLED)
         else:
             # Borramos los errores del formulario en caso de que los hubiera
             form.errors.pop('username', None)
@@ -454,7 +464,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         mis_juegos_mouse = Game.objects.filter(status=GameStatus.ACTIVE,
                                                mouse_user=request.user)
 
-        context_dict = {}
+        games_list = []
         if int(filter) == -1:
             games_list = list(chain(mis_juegos_cat, mis_juegos_mouse))
 
@@ -485,8 +495,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
             game = game[0]
             if game.status == GameStatus.CREATED:
                 # Error porque el juego seleccionado no esta en estado activo
-                return HttpResponseNotFound(
-                    constants.ERROR_SELECTED_GAME_NOT_AVAILABLE)
+                return errorHTTP(request, constants.ERROR_SELECTED_GAME_NOT_AVAILABLE)
 
             # Si la partida a terminado, nos muestra el ultimo estado de la partida
             if game.status == GameStatus.FINISHED and (
@@ -497,8 +506,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
                     and game.mouse_user != request.user:
                 # Error porque el jugador que solicita el juego no es ni el
                 # gato ni el PAC
-                return HttpResponseNotFound(
-                    constants.ERROR_SELECTED_GAME_NOT_YOURS)
+                return errorHTTP(request,
+                                 constants.ERROR_SELECTED_GAME_NOT_YOURS)
 
             request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
             return show_game_service(request)
@@ -557,7 +566,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
                 request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
                 game.mouse_user = request.user
                 game.save()
-                return show_game_service(request)
+                print("Le reenvio a la misma pagina")
+                return redirect('select_game', tipo=1, game_id=game_id)
 
 
         else:
@@ -611,6 +621,10 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         # Almacenamos en la sesion el juego que se está reproduciendo
         request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
         return reproduce_game_service(request)
+
+    # Si nos intentan meter una url que no es ninguna de las opciones
+    else:
+        return error404(request, constants.ACCESO_URL_INVALIDO)
 
 
 @login_required
@@ -886,7 +900,7 @@ def create_only_board(request, game_id=-1):
 
     # No hay ninguna partida con el id
     if len(game) == 0:
-        return errorHTTP(request,
+        return error404(request,
                          constants.ERROR_SELECTED_GAME_NOT_EXISTS)
 
     game = game[0]

@@ -32,6 +32,6 @@ ERROR_NOT_ALLOWED_TO_REPRODUCE = "No puedes reproducir esta partida, porque " \
 ERROR_NOT_FINISHED_YET = "La partida no ha finalizado todavia"
 GET_NOT_ALLOWED = "Metodo GET no permitido sobre esta página"
 
-GAME_SELECTED_SESSION_ID = 'reproduce_id'
 GAME_SELECTED_MOVE_NUMBER = 'move_number'
 GAME_REPRODUCE_BOARD = 'board_of_game'
+ACCESO_URL_INVALIDO = "Intento de acceso no permitido a URL"

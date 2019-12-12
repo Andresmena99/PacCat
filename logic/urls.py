@@ -6,10 +6,8 @@
         Andrés Mena
         Eric Morales
 """
-
 from django.conf.urls import url
 from django.urls import path
-
 from logic import views
 
 urlpatterns = [
@@ -48,4 +46,5 @@ urlpatterns = [
 
     url(r'^create_board_array$', views.create_board_array,
         name='create_board_array'),
+
 ]
