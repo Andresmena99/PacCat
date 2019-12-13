@@ -2,17 +2,17 @@
 @author: rlatorre
 """
 
-import re, json
+import json
+import re
 from decimal import Decimal
-
-from datamodel import constants
-from datamodel.models import Counter, Game, GameStatus, Move
-from datamodel.tests import BaseModelTest
 from django.contrib.auth.models import User
 from django.db.models import Max, Q
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from datamodel import constants
+from datamodel.models import Counter, Game, GameStatus, Move
+from datamodel.tests import BaseModelTest
 from . import forms
 from . import tests_services
 

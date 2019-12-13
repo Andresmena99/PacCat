@@ -19,7 +19,8 @@ EEROR_ACCOUNT_DISABLED = "Your mouse_cat account is disabled."
 ERROR_RESTRICTED_ANONYMOUS = "Action restricted to anonymous users"
 MSG_ERROR_NO_AVAILABLE_GAMES = "There is no available games|No hay juegos " \
                                "disponibles"
-ERROR_SELECTED_GAME_NOT_AVAILABLE = "El juego seleccionado ya no esta disponible"
+ERROR_SELECTED_GAME_NOT_AVAILABLE = "El juego seleccionado ya no esta " \
+                                    "disponible"
 ERROR_SELECTED_GAME_NOT_YOURS = "Este no es tu juego"
 ERROR_SELECTED_GAME_NOT_EXISTS = "El juego seleccionado no existe"
 ERROR_NO_SELECTED_GAME = "No se ha seleccionado ninguna partida"

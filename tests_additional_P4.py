@@ -6,15 +6,10 @@
         Andrés Mena
 """
 import re
-
-from django.contrib.auth.models import User
-from django.db.models import Q
-from django.test import Client, TransactionTestCase
 from django.urls import reverse
-
+from logic.tests_services import PlayGameBaseServiceTests, SHOW_GAME_SERVICE
 from datamodel import constants
 from datamodel.models import Game, GameStatus, Move
-from logic.tests_services import PlayGameBaseServiceTests, SHOW_GAME_SERVICE
 
 
 class GameEndTests(PlayGameBaseServiceTests):

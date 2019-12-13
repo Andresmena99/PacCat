@@ -10,11 +10,10 @@
         Eric Morales
 """
 
-from enum import IntEnum
-
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
+from enum import IntEnum
 
 from datamodel import constants
 
@@ -346,6 +345,7 @@ class Game(models.Model):
     class Meta:
         ordering = ['id']
 
+
 class Move(models.Model):
     """
         Modelo que almacena toda la informacion relativa a un movimiento
@@ -427,7 +427,6 @@ class Move(models.Model):
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
         valid_move(self.game, self.origin, self.target)
-
 
         if self.player == self.game.cat_user:
 

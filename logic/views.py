@@ -7,21 +7,20 @@
         Eric Morales
 """
 import json
-
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.http import HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from itertools import chain
 
 from datamodel import constants
 from datamodel.models import Counter, Game, GameStatus, Move, check_winner
 from logic.forms import SignupForm, UserForm
-from itertools import chain
-from django.core.paginator import Paginator
 
 
 def countErr(request):
@@ -118,7 +117,8 @@ def error404(request, url=None, err=None):
     if err is not None:
         context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. " + err}
     elif url is not None:
-        context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. No se ha encontrado la pagina " + str(url)}
+        context_dict = {'msg_error': "ERROR 404. PAGE NOT FOUND. No se ha "
+                                     "encontrado la pagina " + str(url)}
 
     countErr(request)
 
@@ -406,6 +406,7 @@ def create_game_service(request):
     new_game.save()
     return render(request, 'mouse_cat/new_game.html', {'game': new_game})
 
+
 @login_required
 def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
     """
@@ -486,11 +487,14 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
             game = game[0]
             if game.status == GameStatus.CREATED:
                 # Error porque el juego seleccionado no esta en estado activo
-                return errorHTTP(request, constants.ERROR_SELECTED_GAME_NOT_AVAILABLE)
+                return errorHTTP(request, constants.
+                                 ERROR_SELECTED_GAME_NOT_AVAILABLE)
 
-            # Si la partida a terminado, nos muestra el ultimo estado de la partida
-            if game.status == GameStatus.FINISHED and (
-                    game.cat_user == request.user or game.mouse_user == request.user):
+            # Si la partida a terminado, nos muestra el ultimo estado de la
+            # partida
+            if game.status == GameStatus.FINISHED and \
+                    (game.cat_user == request.user or
+                     game.mouse_user == request.user):
                 return end_game(request, game)
 
             if game.cat_user != request.user \
@@ -512,7 +516,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
     elif request.method == 'GET' and int(tipo) == 2 and int(game_id) == -1:
         # Entre todas las partidas, miro las que solo tienen un jugador
 
-        # En funcion de si tenemos aplicado o no el filtro, devuelve unas partidas de un jugador u otras
+        # En funcion de si tenemos aplicado o no el filtro, devuelve unas
+        # partidas de un jugador u otras
         if int(filter) == -1:
             one_player = Game.objects.filter(mouse_user=None,
                                              status=GameStatus.CREATED)
@@ -521,7 +526,8 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
             one_player = Game.objects.filter(mouse_user=None,
                                              status=GameStatus.CREATED)
 
-        # En la seleccion de partidas a las que unirte, no hay partidas como PAC
+        # En la seleccion de partidas a las que unirte, no hay partidas como
+        # PAC
         # Nunca es nuestro turno tampoco
         elif int(filter) == 2 or int(filter) == 3:
             one_player = []
@@ -540,17 +546,18 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         games = paginator.get_page(page)
         return render(request, 'mouse_cat/join_game.html', {'games': games})
 
-    # Este caso significa que el usuario ya me ha dicho a que partida se quiere unir
+    # Este caso significa que el usuario ya me ha dicho a que partida se
+    # quiere unir
     elif request.method == 'GET' and int(tipo) == 2 and int(game_id) != -1:
         # Compruebo que la partida siga estando disponible (la puede haber
         # cogido otro jugador mientras yo esperaba a seleccionarla)
         game = Game.objects.filter(id=game_id)
         if len(game) > 0:
             game = game[0]
-            if game.status != GameStatus.CREATED or game.mouse_user is not None:
-                return render(request, 'mouse_cat/join_game.html',
-                              {
-                                  'msg_error': constants.ERROR_SELECTED_GAME_NOT_AVAILABLE})
+            if game.status != GameStatus.CREATED or \
+                    game.mouse_user is not None:
+                return render(request, 'mouse_cat/join_game.html', {
+                    'msg_error': constants.ERROR_SELECTED_GAME_NOT_AVAILABLE})
 
             # Le meto en la partida y empieza el juego
             else:
@@ -560,21 +567,17 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
                 print("Le reenvio a la misma pagina")
                 return redirect('select_game', tipo=1, game_id=game_id)
 
-
         else:
-            return render(request, 'mouse_cat/join_game.html',
-                          {
-                              'msg_error': constants.ERROR_SELECTED_GAME_NOT_EXISTS})
+            return render(request, 'mouse_cat/join_game.html', {
+                'msg_error': constants.ERROR_SELECTED_GAME_NOT_EXISTS})
 
     # Muestro todas las partidas finalizadas en las que yo era alguno de los
     # participantes
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) == -1:
-        finished_as_cat = Game.objects.filter(status=GameStatus.FINISHED,
-                                              cat_user=request.user).order_by(
-            'id')
-        finished_as_mouse = Game.objects.filter(status=GameStatus.FINISHED,
-                                                mouse_user=request.user).order_by(
-            'id')
+        finished_as_cat = Game.objects.filter(
+            status=GameStatus.FINISHED, cat_user=request.user).order_by('id')
+        finished_as_mouse = Game.objects.filter(
+            status=GameStatus.FINISHED, mouse_user=request.user).order_by('id')
 
         games_list = []
         if int(filter) == -1:
@@ -732,6 +735,7 @@ def move_service(request):
         return HttpResponse(json.dumps({'status': -2}),
                             content_type="application/json")
 
+
 @login_required
 def reproduce_game_service(request):
     """
@@ -786,10 +790,12 @@ def reproduce_game_service(request):
         board = create_initial_board()
         context_dict = {'game': game, 'board': board}
 
-        # Dejamos un mensaje de quien es el ganador por si reproduce la partida entera
+        # Dejamos un mensaje de quien es el ganador por si reproduce la partida
+        # entera
         insert_winner_message(request, game, context_dict)
 
         return render(request, 'mouse_cat/reproduce_game.html', context_dict)
+
 
 def insert_winner_message(request, game, context_dict):
     """
@@ -919,7 +925,7 @@ def turn(request, game_id=-1):
             return HttpResponse(json.dumps({'winner': 1}),
                                 content_type="application/json")
 
-        moves = Move.objects.filter(game=game).order_by('-date');
+        moves = Move.objects.filter(game=game).order_by('-date')
         if len(moves) != 0:
             last_move = moves[0]
             return HttpResponse(json.dumps({'turn': game.cat_turn,
@@ -1022,7 +1028,8 @@ def get_move_service(request):
     if request.method == 'GET':
         return error404(request, err=constants.GET_NOT_ALLOWED)
 
-    game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_SESSION_ID])
+    game = Game.objects.filter(id=request.session[constants.
+                               GAME_SELECTED_SESSION_ID])
     if len(game) == 0:
         return HttpResponse("ERROR")
 
@@ -1043,7 +1050,8 @@ def get_move_service(request):
 
     json_dict = {}
 
-    # Tengo que devolver un json con previous a 0 si move_number < 0 (resto de campos irrelevantes, no se van a usar)
+    # Tengo que devolver un json con previous a 0 si move_number < 0 (resto de
+    # campos irrelevantes, no se van a usar)
     if move_number < 0:
         json_dict['origin'] = 0
         json_dict['target'] = 0
@@ -1066,7 +1074,8 @@ def get_move_service(request):
             # En el diccionario, los campos previous y next se identifican con
             # 1 (true) y 0 (false)
             json_dict['previous'] = 1 if move_number > 0 or shift == 1 else 0
-            json_dict['next'] = 1 if move_number < len(moves) - 1 or shift == -1 else 0
+            json_dict['next'] = \
+                1 if move_number < len(moves) - 1 or shift == -1 else 0
 
         else:
             json_dict['origin'] = 0

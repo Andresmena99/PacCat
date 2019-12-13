@@ -8,6 +8,7 @@
 """
 
 from django.contrib import admin
+
 from datamodel.models import Game, Move
 
 admin.site.register(Game)
