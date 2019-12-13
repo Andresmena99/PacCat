@@ -3,7 +3,6 @@
 
     Author
     -------
-        Andrés Mena
         Eric Morales
 """
 

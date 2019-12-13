@@ -11,7 +11,7 @@
                 <div class="container">
                     <h2>Bienvenido</h2>
                     <p>¡Crea tu primera partida ahora y empieza a disfrutar!</p>
-                    <a href="{% url 'create_game' %}" class="site-btn">Nueva Partida <img src="{% static 'img/icons/double-arrow.png' %}" alt="#" /></a>
+                    <a href="{% url 'create_game' %}" class="site-btn">Nueva Partida<img src="{% static 'img/icons/double-arrow.png' %}" alt="#" /></a>
                 </div>
             </div>
             <div class="hero-item set-bg d-flex align-items-center justify-content-center text-center"
@@ -19,7 +19,7 @@
                 <div class="container">
                     <h2>Multijugador</h2>
                     <p>Si lo prefieres puedes unirte directamente a la partida de tu amigo y retarlo a un duelo.</p>
-                    <a href="{% url 'join_game' %}" class="site-btn">Unirse a una partida <img src="{% static 'img/icons/double-arrow.png' %}" alt="#" /></a>
+                    <a href="{% url 'select_game' tipo=2 %}" class="site-btn">Unirse a una partida<img src="{% static 'img/icons/double-arrow.png' %}" alt="#" /></a>
                 </div>
             </div>
         </div>

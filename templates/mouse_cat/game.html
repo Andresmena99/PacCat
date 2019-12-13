@@ -134,7 +134,7 @@ function turnLoop(){
                     $( ".turn").fadeIn("slow");
 
 
-                    if (response.origin != -1) {
+                    if (response.origin !== -1) {
                         var origin_x = response.origin % 8;
                         var origin_y = Math.trunc(response.origin / 8);
                         var target_x = response.target % 8;

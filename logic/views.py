@@ -1,5 +1,5 @@
 """
-    Vistas utilizadas a lo largo de la aplicación de PACGato.
+    Vistas utilizadas a lo largo de la aplicación de PACCAT.
 
     Author
     -------
@@ -19,13 +19,28 @@ from django.views.decorators.csrf import csrf_exempt
 
 from datamodel import constants
 from datamodel.models import Counter, Game, GameStatus, Move, check_winner
-from logic.forms import SignupForm, MoveForm, UserForm
+from logic.forms import SignupForm, UserForm
 from itertools import chain
 from django.core.paginator import Paginator
 
 
 def countErr(request):
-    print("aumentamos")
+    """
+        Servicio de contador de errores. Se invoca una vez cada vez que la
+        pagina nos devuelve un error
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+        Returns
+        -------
+        void
+
+        Author
+        -------
+            Eric Morales
+    """
     # Si el contador ya esta definido en la sesion, lo incrementamos en 1
     if "counter" in request.session:
         request.session["counter"] += 1
@@ -70,7 +85,7 @@ def anonymous_required(f):
 
 def login_required(f):
     """
-        Decorador para limitar funciones a usuarios anonimos.
+        Decorador para limitar funciones a usuarios logeados.
 
         Parameters
         ----------
@@ -83,7 +98,7 @@ def login_required(f):
 
         Author
         -------
-            Profesores PSI
+            Andres Mena
     """
 
     def wrapped(request, *args, **kwargs):
@@ -112,7 +127,7 @@ def error404(request, url=None, err=None):
 
 def errorHTTP(request, exception=None):
     """
-        Crea un error http basadp en una solicitud y lo devuelve
+        Crea un error http basado en una solicitud y lo devuelve
 
         Parameters
         ----------
@@ -130,25 +145,21 @@ def errorHTTP(request, exception=None):
             Profesores PSI
     """
     countErr(request)
-    context_dict = {'msg_error': exception}
-    return render(request, "mouse_cat/error.html", context_dict)
+    return render(request, "mouse_cat/error.html", {'msg_error': exception})
 
 
-def end_game(request, winner, game):
+def end_game(request, game):
     """
-        Funcion que genera la pagina html que muestra el resultado final de una
-        partida.
+        Funcion que imprime el tablero una vez ha finalizado la partida,
+        mostrando el mensaje de ganador o perdedor en funcion del usuario que
+        hace la solicitud
 
         Parameters
         ----------
         request : HttpRequest
             Solicitud Http
-        winner : int
-            Indica quien ha sido el ganador de la partida:
-                - winner == 1: ganador gato
-                - winner == 2: ganador ratón
         game : Game
-            Juego actual
+            Juego del que mostrar la partida
 
         Returns
         -------
@@ -172,22 +183,7 @@ def end_game(request, winner, game):
     context_dict = {}
 
     # Felicitamos al usuario que ha ganado
-    if winner == 1:
-        if request.user == game.cat_user:
-            msg = constants.CAT_WINNER + ". Enhorabuena " + str(request.user)
-            context_dict['winner'] = msg
-        else:
-            msg = constants.CAT_WINNER + ". Sigue practicando " + str(
-                request.user)
-            context_dict['winner'] = msg
-    if winner == 2:
-        if request.user == game.mouse_user:
-            msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(request.user)
-            context_dict['winner'] = msg
-        else:
-            msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(
-                request.user)
-            context_dict['winner'] = msg
+    insert_winner_message(request, game, context_dict)
 
     context_dict['board'] = board
     return render(request, "mouse_cat/end_game.html", context_dict)
@@ -243,6 +239,7 @@ def login_service(request):
         user = authenticate(username=username, password=password)
         if user:
             if user.is_active:
+                # Inicia sesion en la aplicaion
                 login(request, user)
 
                 # Reseteo el contador
@@ -260,7 +257,7 @@ def login_service(request):
             return render(request, 'mouse_cat/login.html',
                           {'user_form': form})
 
-    # Metodo get implica que alguien está intentando ver la pagina
+    # Metodo get implica que alguien está intentando ver la pagina de login
     else:
         return render(request, 'mouse_cat/login.html',
                       {'user_form': UserForm()})
@@ -287,7 +284,7 @@ def logout_service(request):
             Eric Morales
     """
 
-    # Obtenemos que usuario estas conectado, y procedemos a cerrar sesion
+    # Obtenemos que usuario esta conectado, y procedemos a cerrar sesion
     user = request.user
     logout(request)
 
@@ -348,8 +345,7 @@ def signup_service(request):
             return render(request,
                           'mouse_cat/signup.html', {'user_form': form})
 
-    # Si el metodo es get, es la primera vez que accede a la página, por lo
-    # que le damos un formulario nuevo para que lo rellene
+    # Si el metodo es get, devolvemos la pagina para que se registre
     else:
         return render(request,
                       'mouse_cat/signup.html', {'user_form': SignupForm()})
@@ -358,7 +354,7 @@ def signup_service(request):
 def counter_service(request):
     """
         Funcion que genera la pagina html para mostrar el valor del counter
-        y que se encarga de incrementarlo en cada solicitud.
+        e inicializarlo en caso de que no estuviese definido en la sesion
 
         Parameters
         ----------
@@ -410,60 +406,12 @@ def create_game_service(request):
     new_game.save()
     return render(request, 'mouse_cat/new_game.html', {'game': new_game})
 
-
-@login_required
-def join_game_service(request):
-    """
-        Funcion que nos 'mete' en una partida existente y muestra una
-        pagina avisando de ello.
-
-        Parameters
-        ----------
-        request : HttpRequest
-            Solicitud Http
-
-        Returns
-        -------
-        Html : archivo html con el resultado de unirnos a una partida.
-
-        Author
-        -------
-            Andrés Mena
-    """
-
-    # Tenemos que meter al usuario en la partida con id mas alto
-    # Entre todas las partidas, miro las que solo tienen un jugador
-    un_solo_jugador = Game.objects.filter(mouse_user=None)
-
-    # Si no hay partidas con un solo jugador
-    if len(un_solo_jugador) <= 0:
-        return render(request, 'mouse_cat/join_game.html',
-                      {'msg_error': constants.MSG_ERROR_NO_AVAILABLE_GAMES})
-
-    # Ordeno las partidas por id de forma descendente para hacer una busqueda
-    # mas eficaz
-    else:
-        for partida in un_solo_jugador.order_by('-id'):
-            # Me unire a la partida si yo no soy el propio gato, es decir,
-            # no voy a jugar contra mi mismo
-            if partida.cat_user != request.user:
-                request.session[constants.GAME_SELECTED_SESSION_ID] = \
-                    partida.id
-                partida.mouse_user = request.user
-                partida.save()
-                return render(request, 'mouse_cat/join_game.html',
-                              {'game': partida})
-
-        return render(request, 'mouse_cat/join_game.html',
-                      {
-                          'msg_error': constants.MSG_ERROR_NO_AVAILABLE_GAMES})
-
-
 @login_required
 def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
     """
-        Funcion que nos muestra todas las partidas existentes y nos permite
-        comenzar a jugar en cualquiera de ellas con tan solo un click
+        Funcion que maneja las partdias y la seleccion de ellas: Unirse a
+        partidas, mostrar partidas en las que estoy participando para seleccion
+         de juego y ver que partidas se pueden reproducir
 
         Parameters
         ----------
@@ -476,19 +424,20 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
                 3: Mostrar partidas para reproducir
 
         filter: int (default -1)
-            Nos dice si tenemos que aplicar algun filtro a los resutlados que devolvemos
+            Nos dice si tenemos que aplicar algun filtro a los resutlados
+            que devolvemos
                 1: Partidas como gato
                 2: Partidas como PAC
                 3: Partidas en las que es mi turno
                 4: Partidas que he ganado (solo para finished)
 
         game_id : int (default -1)
-            Id de la partida seleccionada para jugar, por defecto a -1
+            Id de la partida seleccionada
 
         Returns
         -------
         Html : archivo html con una lista de partidas o con el tablero
-               listo para jugar
+               listo para jugar o reproducir
 
         Author
         -------
@@ -542,7 +491,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
             # Si la partida a terminado, nos muestra el ultimo estado de la partida
             if game.status == GameStatus.FINISHED and (
                     game.cat_user == request.user or game.mouse_user == request.user):
-                return end_game(request, check_winner(game), game)
+                return end_game(request, game)
 
             if game.cat_user != request.user \
                     and game.mouse_user != request.user:
@@ -627,8 +576,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
                                                 mouse_user=request.user).order_by(
             'id')
 
-        context_dict = {}
-
+        games_list = []
         if int(filter) == -1:
             games_list = list(chain(finished_as_cat, finished_as_mouse))
 
@@ -658,7 +606,7 @@ def select_game_service(request, tipo=-1, filter=-1, game_id=-1):
         return render(request, 'mouse_cat/finished_games.html',
                       {'games': games})
 
-        # Entrar en modo reproduccion
+    # Entrar en modo reproduccion
     elif request.method == 'GET' and int(tipo) == 3 and int(game_id) != -1:
         # Almacenamos en la sesion el juego que se está reproduciendo
         request.session[constants.GAME_SELECTED_SESSION_ID] = game_id
@@ -681,7 +629,8 @@ def show_game_service(request):
 
         Returns
         -------
-        Html : archivo html con con el tablero listo para jugar.
+        Html : archivo html con con el tablero listo para jugar o error en
+        caso de que el juego no este disponible
 
         Author
         -------
@@ -699,9 +648,11 @@ def show_game_service(request):
         # ganado, en cuyo caso afirmativo tendré que llamar a la función de
         # partida finalizada
         if game.status == GameStatus.FINISHED:
-            return end_game(request, check_winner(game), game)
+            return end_game(request, game)
 
-        return create_board(request, game)
+        # Devolvemos la partida con tablero
+        return render(request, 'mouse_cat/game.html',
+                      {'game': game, 'board': create_board_from_game(game)})
     except KeyError:
         return errorHTTP(request, constants.ERROR_NO_SELECTED_GAME)
 
@@ -709,8 +660,8 @@ def show_game_service(request):
 @csrf_exempt
 def move_service(request):
     """
-        Funcion que realiza el movimiento solicitado por el formulario
-        MoveForm usando el método POST y muestra el resultado del mismo.
+        Funcion que realiza un movimiento en la partida que se esta jugando
+        (via POST), o da error si se llama via GET
 
         Parameters
         ----------
@@ -719,12 +670,15 @@ def move_service(request):
 
         Returns
         -------
-        Html : archivo html con el resultado del movimiento, ya sea el
-        tablero actualizado, el final del juego o un error.
+        HttpResponse : json con el status del movimiento, que puede ser:
+            -2: Error en el movimiento
+            -1: Error en el movimiento
+            0: Movimiento ok
+            2: Hay ganador, finalizar partida
 
         Author
         -------
-            Andrés Mena
+            Eric Morales
     """
 
     if request.method == 'POST':
@@ -742,6 +696,7 @@ def move_service(request):
             # Sacamos la partida que se esta jugando de la sesión
             game = Game.objects.filter(id=request.session[
                 constants.GAME_SELECTED_SESSION_ID])[0]
+
             # Intentamos hacer el movimiento. En caso de que nos de una
             # excepcion, significa que el moviemiento no estaba permitido
             try:
@@ -755,6 +710,9 @@ def move_service(request):
                         game=game, player=game.mouse_user,
                         origin=origin,
                         target=target)
+
+                # Si hay un ganador, devolvemos un status code a interpretar
+                # por el que ha hecho la solicutd, para que finalice la partida
                 if check_winner(game) != 0:
                     return HttpResponse(json.dumps({'status': 2}),
                                         content_type="application/json")
@@ -765,8 +723,6 @@ def move_service(request):
             return HttpResponse(json.dumps({'status': 0}),
                                 content_type="application/json")
 
-        # Si intentamos sacar un id de un juego que no existe, nos dará
-        # este error
         except KeyError:
             return HttpResponse(json.dumps({'status': -2}),
                                 content_type="application/json")
@@ -776,38 +732,31 @@ def move_service(request):
         return HttpResponse(json.dumps({'status': -2}),
                             content_type="application/json")
 
-
-@login_required
-def finished_games(request):
-    """
-        REVISAR: COMENTAR
-    """
-
-    # Tenemos que meter al usuario en la partida con id mas alto
-    # Entre todas las partidas, miro las que solo tienen un jugador
-    finalizadas_raton = Game.objects.filter(status=GameStatus.FINISHED,
-                                            mouse_user=request.user).order_by(
-        'id')
-    finalizadas_gato = Game.objects.filter(status=GameStatus.FINISHED,
-                                           cat_user=request.user).order_by(
-        'id')
-
-    partidas_finalizadas = list(chain(finalizadas_raton, finalizadas_gato))
-    if len(partidas_finalizadas) > 0:
-        return render(request, 'mouse_cat/finished_games.html',
-                      {'finished': partidas_finalizadas})
-
-    return render(request, 'mouse_cat/finished_games.html')
-
-
 @login_required
 def reproduce_game_service(request):
-    """PARAMETROS DE ENTRADA:
-        Nos mandan un formulario:
-            1: Next
-            -1: Previous
-            2: Play
     """
+        Funcion que pinta el tablero para comenzar la reproduccion de una
+        partida, inicializando las variables necesarias para la reproduccion de
+        la misma
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        Html : archivo html con con el tablero listo o error en caso de que se
+        produzca algun comportamiento inesperado
+
+        Author
+        -------
+            Andrés Mena
+    """
+
+    if constants.GAME_SELECTED_SESSION_ID not in request.session:
+        return errorHTTP(request, constants.ERROR_REPRODUCE_NOT_IN_SESSION)
+
     game_id = request.session[constants.GAME_SELECTED_SESSION_ID]
     game = Game.objects.filter(id=game_id)
 
@@ -830,8 +779,7 @@ def reproduce_game_service(request):
 
     # Coloco el tablero en la posicion inicial
     if request.method == "GET":
-        # Ponemos a 0 el movimiento por le que vamos reproduciendo
-
+        # Ponemos a 0 el movimiento por que vamos a colocar en pos inicial
         request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
 
         # Creo un tablero con los gatos en las posiciones iniciales
@@ -839,73 +787,55 @@ def reproduce_game_service(request):
         context_dict = {'game': game, 'board': board}
 
         # Dejamos un mensaje de quien es el ganador por si reproduce la partida entera
-
-        winner = check_winner(game)
-        if winner == 1:
-            if request.user == game.cat_user:
-                msg = constants.CAT_WINNER + ". Enhorabuena " + str(
-                    request.user)
-                context_dict['winner'] = msg
-            else:
-                msg = constants.CAT_WINNER + ". Sigue practicando " + str(
-                    request.user)
-                context_dict['winner'] = msg
-        if winner == 2:
-            if request.user == game.mouse_user:
-                msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(
-                    request.user)
-                context_dict['winner'] = msg
-            else:
-                msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(
-                    request.user)
-                context_dict['winner'] = msg
+        insert_winner_message(request, game, context_dict)
 
         return render(request, 'mouse_cat/reproduce_game.html', context_dict)
 
-
-def create_board(request, game, form=None):
+def insert_winner_message(request, game, context_dict):
     """
-        Funcion que devuelve el tablero de la partida pasada como parámetro,
-        devolviendo además los errores correspondientes, si los hay
+        Rellena el contenido del diccionario (context_dict) con el mensaje de
+        victoria personalizado para el usuario
 
         Parameters
         ----------
         request : HttpRequest
             Solicitud Http
-        game : Game
-            Partida correspondiente
-        form : Form (default None)
-            Formulario que contiene los errores correspondientes al ultimo
-            movimiento que se ha intentado realizar
+
+        game: Game
+            Partida sobre la que hay que mostrar quien ha ganado
+
+        context_dict: Dictionary
+            Diccionario que se le devolvera a la pagina con los mensajes
+            personalizados
 
         Returns
         -------
-        Html : archivo html con el resultado del movimiento, ya sea el
-        tablero actualizado, el final del juego o un error.
+        Void
 
         Author
         -------
-            Eric Morales
+            Andrés Mena
     """
 
-    # Creamos el array que representa el tablero
-    if game is not None:
-        # Creamos el tablero
-        board = create_board_from_game(game)
-
-        # Si nos han mandado un formulario, significa que puede tener errores,
-        # asi que devolvemos el tablero con el formulario correspondiente
-        if form is not None:
-            return render(request, 'mouse_cat/game.html',
-                          {'game': game, 'board': board,
-                           'move_form': form})
-
-        # Si no nos han dado formulario, significa que no se ha intentado hacer
-        # todavia una solicitud de movimiento, por lo que creamos nosotros el
-        # formulario vacio
-        return render(request, 'mouse_cat/game.html',
-                      {'game': game, 'board': board,
-                       'move_form': MoveForm()})
+    winner = check_winner(game)
+    if winner == 1:
+        if request.user == game.cat_user:
+            msg = constants.CAT_WINNER + ". Enhorabuena " + str(
+                request.user)
+            context_dict['winner'] = msg
+        else:
+            msg = constants.CAT_WINNER + ". Sigue practicando " + str(
+                request.user)
+            context_dict['winner'] = msg
+    if winner == 2:
+        if request.user == game.mouse_user:
+            msg = constants.MOUSE_WINNER + ". Enhorabuena " + str(
+                request.user)
+            context_dict['winner'] = msg
+        else:
+            msg = constants.MOUSE_WINNER + ". Sigue practicando " + str(
+                request.user)
+            context_dict['winner'] = msg
 
 
 def create_only_board(request, game_id=-1):
@@ -917,21 +847,16 @@ def create_only_board(request, game_id=-1):
         ----------
         request : HttpRequest
             Solicitud Http
-        game : Game
-            Partida correspondiente
-        form : Form (default None)
-            Formulario que contiene los errores correspondientes al ultimo
-            movimiento que se ha intentado realizar
+        game_id : int
+            Id del juego del que se crea el tablero
 
         Returns
         -------
-        Html : archivo html con el resultado del movimiento, ya sea el
-        tablero actualizado, el final del juego o un error.
+        Html : archivo html con la situacion del tablero de la partida
 
         Author
         -------
-            Eric Morales
-            :param game_id:
+        Eric Morales
     """
 
     game = Game.objects.filter(id=game_id)
@@ -954,9 +879,33 @@ def create_only_board(request, game_id=-1):
 @csrf_exempt
 def turn(request, game_id=-1):
     """
-        REVISAR
-    """
+        Funcion que comprueba si ya es mi turno, para refrescar la partida
 
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        game_id : int
+            Id del juego del que se crea el tablero
+
+        Returns
+        -------
+        HttpResponse : json con parametros variables, entre los siguientes
+            turn:
+                -1: No es mi turno
+                1: Es mi turno
+
+            origin: Origen del movimiento
+            target: Destino del movimiento
+            winner:
+                0: No hay ganador
+                1: Hay ganador
+
+        Author
+        -------
+            Eric Morales
+    """
     game = Game.objects.filter(id=game_id)
 
     # No hay ninguna partida con el id
@@ -989,8 +938,23 @@ def turn(request, game_id=-1):
                         content_type="application/json")
 
 
-# Funcion que simplemente devuelve el tablero en funcion del estado de la partida
 def create_board_from_game(game):
+    """
+        Funcion que devuelve el tablero con las posiciones de los jugadores
+
+        Parameters
+        ----------
+        game: Game
+            Partida sobre la que hay que mostrar quien ha ganado
+
+        Returns
+        -------
+        int []: Array con el tablero y sus jugadores
+
+        Author
+        -------
+            Eric Morales
+    """
     # Primero colocamos todas las casillas a 0, y luego donde estén los
     # gatos lo ponemos a 1, y donde esté el PAC a -1
     board = [0] * 64
@@ -1006,8 +970,19 @@ def create_board_from_game(game):
     return newBoard
 
 
-# Funcion que crea un tablero vacio
 def create_initial_board():
+    """
+        Funcion que devuelve un tablero con los jugadores en la posicion
+        inicial
+
+        Returns
+        -------
+        int []: Array con el tablero y sus jugadores
+
+        Author
+        -------
+            Andres Mena
+    """
     board = [0] * 64
     board[0] = 1
     board[2] = 2
@@ -1021,11 +996,31 @@ def create_initial_board():
     return newBoard
 
 
-# Esta funcion nos devuelve el json que nos pide el enunciado,
 @csrf_exempt
 def get_move_service(request):
+    """
+        Funcion que devuelve el json con la información que debe realizar la
+        partida reproduciendose
+
+        Parameters
+        ----------
+        request : HttpRequest
+            Solicitud Http
+
+        Returns
+        -------
+        HttpResponse : json con información del movimiento
+            origin: Origen del movimiento
+            target: Destino del movimiento
+            previous: Flag que indica si hay movimientos previos
+            next: Flag que indica si hay movimientos siguientes
+
+        Author
+        -------
+            Andres Mena
+    """
     if request.method == 'GET':
-        return HttpResponseNotFound(constants.GET_NOT_ALLOWED)
+        return error404(request, err=constants.GET_NOT_ALLOWED)
 
     game = Game.objects.filter(id=request.session[constants.GAME_SELECTED_SESSION_ID])
     if len(game) == 0:
@@ -1059,8 +1054,8 @@ def get_move_service(request):
         if move_number < len(moves):
             real_move = moves[move_number]
 
-            # En el diccionario, los campos previous y next se identifican con 1 (true)
-            # y 0 (false)
+            # En funcion de si vamos hacia delante o atras, tendremos un target
+            # y un origin
             if shift == 1:
                 json_dict['origin'] = real_move.origin
                 json_dict['target'] = real_move.target
@@ -1068,6 +1063,8 @@ def get_move_service(request):
                 json_dict['origin'] = real_move.target
                 json_dict['target'] = real_move.origin
 
+            # En el diccionario, los campos previous y next se identifican con
+            # 1 (true) y 0 (false)
             json_dict['previous'] = 1 if move_number > 0 or shift == 1 else 0
             json_dict['next'] = 1 if move_number < len(moves) - 1 or shift == -1 else 0
 
@@ -1077,6 +1074,7 @@ def get_move_service(request):
             json_dict['previous'] = 0
             json_dict['next'] = 0
 
+    # Actualizamos por qué movimiento vamos en la sesion
     if shift == 1:
         request.session[constants.GAME_SELECTED_MOVE_NUMBER] += 1
     elif shift == -1:
@@ -1084,21 +1082,5 @@ def get_move_service(request):
         if request.session[constants.GAME_SELECTED_MOVE_NUMBER] < 0:
             request.session[constants.GAME_SELECTED_MOVE_NUMBER] = 0
 
-    # Cuando se acaban los movimientos (campo next == 0), se añade un campo al diccionario con el gana
     return HttpResponse(json.dumps(json_dict),
                         content_type="application/json")
-
-
-def create_board_array(request):
-    array = request.GET['positions']
-    numbers = array.split(',')
-    board = []
-    for number in numbers:
-        board.append(int(number))
-
-    newBoard = []
-    for c in range(0, 64, 8):
-        newBoard.append(board[c: c + 8])
-
-    return render(request, 'mouse_cat/board.html',
-                  {'board': newBoard})

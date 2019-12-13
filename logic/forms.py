@@ -1,5 +1,5 @@
 """
-    Formularios utilizados a lo largo de la aplicación de PACGato.
+    Formularios utilizados a lo largo de la aplicación de PACCAT.
         - Game
         - Move
         - Counter
@@ -16,57 +16,6 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 from datamodel.models import Move
-
-
-class MoveForm(forms.ModelForm):
-    """
-        Formulario que recoge un movimiento.
-
-        Attributes
-        ----------
-        origin : IntegerField
-        target : IntegerField
-
-        Methods
-        -------
-        clean(self)
-            Llama a la función superior y comprueba si hay errores.
-    """
-    origin = forms.IntegerField(initial=0)
-    target = forms.IntegerField(initial=0)
-
-    class Meta:
-        model = Move
-        fields = ('origin', 'target')
-
-    def clean(self):
-        """
-            Llama a la función superior y comprueba si hay errores.
-
-            Parameters
-            ----------
-            none
-
-            Returns
-            -------
-            string : errores en caso de haberlos
-
-            Author
-            -------
-                Andrés Mena
-        """
-        super(MoveForm, self).clean()
-
-        # extract the username and text field from the data
-        origin = self.cleaned_data.get('origin')
-        target = self.cleaned_data.get('target')
-
-        if origin < 0 or origin > 63 or target > 63 or target < 0:
-            self.add_error(None, 'Los campos origin y target tienen que' +
-                           ' estar en el rango [0,63]')
-
-        # devolver los errores en caso de haberlos
-        return self.cleaned_data
 
 
 class SignupForm(forms.ModelForm):

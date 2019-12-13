@@ -1,5 +1,5 @@
 """
-    URLs correspondientes a las vistas de la aplicación de PACGato.
+    URLs correspondientes a las vistas de la aplicación de PACCAT.
 
     Author
     -------
@@ -18,7 +18,6 @@ urlpatterns = [
     path('signup/', views.signup_service, name='signup'),
     path('counter/', views.counter_service, name='counter'),
     path('create_game/', views.create_game_service, name='create_game'),
-    path('join_game/', views.join_game_service, name='join_game'),
     url(r'^select_game/(?P<tipo>\d+)/$', views.select_game_service,
         name='select_game'),
     url(r'^select_game/(?P<tipo>\d+)/(?P<filter>\d+)$', views.select_game_service,
@@ -30,11 +29,8 @@ urlpatterns = [
     url(r'^select_game/', views.select_game_service, name='select_game'),
     path('play/', views.show_game_service, name='show_game'),
 
-    # REVISAR: Esto puede ser lioso, el nombre de move_service nos lo ha dicho el enunciado...
     path('move/', views.move_service, name='move'),
     path('get_move/', views.get_move_service, name='get_move'),
-
-    url(r'^finished_games/', views.finished_games, name='finished_games'),
 
     url(r'^reproduce_game_service/(?P<game_id>\d+)/$', views.reproduce_game_service,
         name='reproduce_game'),
@@ -43,8 +39,4 @@ urlpatterns = [
     url(r'^turn/(?P<game_id>\d+)/$', views.turn,
         name='turn'),
     path('reproduce_game/', views.reproduce_game_service, name='reproduce_game'),
-
-    url(r'^create_board_array$', views.create_board_array,
-        name='create_board_array'),
-
 ]

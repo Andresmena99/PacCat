@@ -4,7 +4,6 @@
     Author
     -------
         Andrés Mena
-        Eric Morales
 """
 
 from django.conf.urls import url

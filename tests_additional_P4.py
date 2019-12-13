@@ -30,9 +30,10 @@ class GameEndTests(PlayGameBaseServiceTests):
         """Se realiza una secuencia de movimientos. En cada movimiento,
         se comprueba que el estado de la partida siga siendo activo, y que la
         respuesta de la página no sea la victoria ni de gato ni de PAC. En el
-         último movimiento, hacemos que ganen los gatos porque encierran al
-         PAC, y comprobamos que la partida pasa a estado finalizada, y que
-         la pagina nos devuelve la respuesta de gato gana"""
+        último movimiento, hacemos que ganen los gatos porque encierran a
+        PAC, y comprobamos que la partida pasa a estado finalizada, y que
+        la pagina nos devuelve la respuesta de gato gana. Comprobamos tambien
+        que el juego ya no está en la sesión"""
 
         # Generamos una secuencia de movimientos que encierra al PAC
         # (excepto el ultimo movimiento)
@@ -98,8 +99,8 @@ class GameEndTests(PlayGameBaseServiceTests):
 
     def test2(self):
         """Igual que el test1, se realiza una secuencia de movimentos, pero
-        en este caso el que gana es el gato, porque se coloca a la misma altura
-        que el ultimo PAC, y eso lo marcamos como victoria del gato"""
+        en este caso el que gana es PAC, porque llega al otro extremo del
+        tablero"""
 
         # Generamos una secuencia de movimientos que hace ganar al PAC
         # (excepto el ultimo movimiento)
@@ -137,14 +138,14 @@ class GameEndTests(PlayGameBaseServiceTests):
                           self.decode(response.content))
             self.assertFalse(m)
 
-        # Este ultimo movimiento hace que el PAC (PAC) llegue al otro extremo
+        # Este ultimo movimiento hace que el PAC llegue al otro extremo
         # por lo que gana la partida
         Move.objects.create(
             game=game, player=self.user2, origin=9, target=2)
 
         self.assertEqual(game.status, GameStatus.FINISHED)
 
-        # Comprobamos que nos ha llevado a la pagina de victoria del gato
+        # Comprobamos que nos ha llevado a la pagina de victoria del PAC
         response = self.client1.get(reverse(SHOW_GAME_SERVICE), follow=True)
         m = re.search(constants.MOUSE_WINNER, self.decode(response.content))
         self.assertTrue(m)

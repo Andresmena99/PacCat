@@ -1,5 +1,5 @@
 """
-    Modelos de datos utilizados a lo largo de la aplicación de PACGato.
+    Modelos de datos utilizados a lo largo de la aplicación de PACCAT.
         - Game
         - Move
         - Counter
@@ -48,6 +48,7 @@ def validate_position(value):
 
         Author
         -------
+            Andrés Mena
             Eric Morales
     """
     if value < Game.MIN_CELL or value > Game.MAX_CELL:
@@ -86,6 +87,7 @@ def valid_move(game, origin, target):
 
         Author
         -------
+            Andrés Mena
             Eric Morales
     """
 
@@ -275,6 +277,7 @@ class Game(models.Model):
             Author
             -------
                 Andrés Mena
+                Eric Morales
         """
 
         # Antes de guardar, comprobamos si la partida ya ha terminado
