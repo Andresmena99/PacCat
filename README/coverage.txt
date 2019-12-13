@@ -1,0 +1,22 @@
+Coverage ejecutando todos los tests:
+
+coverage run --omit="*/test*" --source=logic,datamodel ./manage.py test datamodel.tests_models tests_additional_P4 logic.tests_function logic.tests_services_P4 datamodel.tests
+
+coverage report
+
+Name                     Stmts   Miss  Cover
+--------------------------------------------
+datamodel/admin.py           4      0   100%
+datamodel/constants.py      22      0   100%
+datamodel/models.py        179      7    96%
+logic/forms.py              33     14    58%
+logic/urls.py                4      0   100%
+logic/views.py             333    220    34%
+--------------------------------------------
+TOTAL                      575    241    58%
+
+
+
+Como podemos ver solo tenemos un coverage de un 58%, esto es debido a que los
+test sobretodo prueban la funcionalidad de la parte interna de la aplicación,
+entonces la parte de views se queda prácticamente sin testear.
