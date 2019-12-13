@@ -12,7 +12,20 @@ Se entrega todo lo necesario para la ejecución de la aplicación de PacCat:
 
 Aclaraciones:
     - Filtro:
-        En función de la pagina en la que estamos, el filtro tiene una opciones u otras
+        En función de la pagina en la que estamos, el filtro tiene una opciones
+        u otras
 
-    - Victoria:
-        El PAC gana cuando consigue llegar arriba del todo. Los gatos (fantasmas) ganan cuando rodean al PAC
+        Hemos implementado el filtro en la seccion unirse a partida, que,
+        aunque de momento en la funcionalidad de la aplicación siempre nos
+        vamos a unir como PAC (porque al crearse una partida, siempre se asigna
+        automáticamente el gato al nuevo jugador), para futura funcionalidad
+        de la aplicacion en la que se pueda decidir como qué personaje quieres
+        iniciar la partida
+    - Condicion de victoria:
+        El PAC gana cuando consigue llegar arriba del todo. Los gatos
+        (fantasmas) ganan cuando rodean al PAC
+
+    - Usuario alumnodb. Tiene una serie de partidas jugadas, para que puedas
+        reproducirlas directamente.
+        usuario: alumnodb
+        Contraseña: alumnodb
