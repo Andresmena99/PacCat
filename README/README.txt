@@ -24,3 +24,8 @@ Aclaraciones:
     - Condicion de victoria:
         El PAC gana cuando consigue llegar arriba del todo. Los gatos
         (fantasmas) ganan cuando rodean al PAC
+
+    - Usuario alumnodb. Tiene una serie de partidas jugadas, para que puedas
+        reproducirlas directamente.
+        usuario: alumnodb
+        Contraseña: alumnodb
