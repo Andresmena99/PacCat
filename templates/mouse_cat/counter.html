@@ -1,10 +1,9 @@
 {% extends "mouse_cat/base.html" %}
 
 {% block content %}
-<div id="content" class="old_ratonGato">
-    <h1>Request counters</h1>
-    <p>Counter session: <b>{{ counter_session }}</b></p>
-    <p>Counter global: <b>{{ counter_global }}</b></p>
-    <p><a href="{% url 'landing' %}">Volver a inicio</a></p>
+<div id="content" class="old_ratonGato" style="padding-top:15rem;">
+    <h1 style="padding-bottom: 1rem">Contador de errores:</h1>
+    <p>Sesión actual: <b>{{ counter_session }}</b></p>
+    <p>Totales: <b>{{ counter_global }}</b></p>
 </div>
 {% endblock content %}
