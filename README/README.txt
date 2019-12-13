@@ -6,6 +6,8 @@ Autores:
     Andrés Mena
 
 Se entrega todo lo necesario para la ejecución de la aplicación de PacCat:
+    - La aplicación se encuentra desplegada a heroku con el siguiente enlace:
+        https://pac-cat.herokuapp.com
     - Archivo coverage.txt en el que se detalla la ejecucion del comando.
     - Capturas de pantalla con las ejecuciones los tests y su coverage.
     - Nuestros tests propios.
