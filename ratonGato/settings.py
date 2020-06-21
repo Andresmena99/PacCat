@@ -81,7 +81,7 @@ if os.getenv('SQLITE', False):
     }
 else:
     DATABASES['default'] = dj_database_url.config(
-        default='postgres://userdb:userdb@localhost:5432/ratongato')
+        default='postgres://mena:mena@localhost:5432/ratongato')
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticHeroku')
 
