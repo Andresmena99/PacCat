@@ -11,3 +11,5 @@ Calificación del proyecto: 10/10
 Realizado con: [Eric Morales](https://github.com/Erichgh)
 
 Enlace del juego: [PacCat](http://pac-cat.herokuapp.com/)
+
+[Instrucciones de despliegue](https://github.com/Andresmena99/PacCat/wiki)
